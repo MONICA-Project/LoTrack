@@ -55,7 +55,7 @@ public:
       this->data_size = o;
       for (int i = 0; i < o; ++i) {
         if (indices[i] >= 0) {
-          this->data[i].mac_Address = WiFi.BSSIDstr(indices[i]);
+          this->data[i].mac_Address = WiFi.BSSIDstr(indices[i]).replace(":", "");
           this->data[i].mac_RSSI = String(WiFi.RSSI(indices[i]));
           this->data[i].mac_Channel = String(WiFi.channel(indices[i]));
           this->data[i].mac_SSID = String(WiFi.SSID(indices[i]));

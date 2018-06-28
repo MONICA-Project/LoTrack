@@ -1,5 +1,5 @@
 #define DEBUG_OLEDDISPLAY(...) Serial.printf( __VA_ARGS__ )
-#include <SSD1306.h>
+#include "include/SSD1306.h"
 
 template <int pin_address, int pin_sda, int pin_scl, int pin_display>
 class OLED {

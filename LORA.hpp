@@ -1,4 +1,4 @@
-#include <LoRa.h>
+#include "include/LoRa.h"
 
 template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band>
 class LORA {
@@ -23,27 +23,25 @@ public:
   }
   void send(macInfoField* macs, gpsInfoField gps, uint8_t mac_l) {
     this->lora->beginPacket();
-    for (int i = 0; i < mac_l; i++) {
-      this->lora->print(macs[i].mac_Address);
+    for (int i = 0; i < mac_l; i++) { //WLAN 12+1+4+1+2+1 = 21 Char
+      this->lora->print(macs[i].mac_Address); // 12 Char
       this->lora->print(",");
-      this->lora->print(macs[i].mac_RSSI);
+      this->lora->print(macs[i].mac_RSSI); // 4 Char
       this->lora->print(",");
-      this->lora->println(macs[i].mac_Channel);
+      this->lora->println(macs[i].mac_Channel); // 2 Char + ln (1 Char)
     }
-    this->lora->print(gps.latitude, 6);
+    //Gps 8+1+8+1+6 = 24 Char
+    this->lora->print(gps.latitude, 8);
     this->lora->print(",");
-    this->lora->print(gps.longitude, 6);
+    this->lora->print(gps.longitude, 8);
     this->lora->print(",");
-    this->lora->print(gps.hour);
-    this->lora->print(":");
-    this->lora->print(gps.minute);
-    this->lora->print(":");
-    this->lora->println(gps.second);
-    this->lora->println("");
+    this->lora->print(gps.hour<10?"0"+ String(gps.hour):String(gps.hour));
+    this->lora->print(gps.minute<10?"0"+String(gps.minute):String(gps.minute));
+    this->lora->println(gps.second<10?"0"+String(gps.second):String(gps.second));
     this->lora->endPacket();
   }
 private:
-  oledclass * display;
+  oledclass* display;
   LoRaClass* lora;
   bool _lora_enabled = false;
 };
