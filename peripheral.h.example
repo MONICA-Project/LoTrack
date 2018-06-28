@@ -1,0 +1,33 @@
+#include "projectstructs.h"
+
+namespace {
+  extern char const wifissid[] = "IoT";
+  extern char const wifipsk[] = "";
+  extern char const esp_name[] = "ESP32Lora-Test";
+}
+
+#include "RXTX.hpp"
+RXTX* s = new RXTX();
+
+#include "OLED.hpp"
+typedef OLED<0x3c, 4, 15, 16> oledclass;
+oledclass* display = new oledclass();
+
+#include "OTA.hpp"
+OTA* aOTA = new OTA(display);
+
+#include "GPS.hpp"
+typedef GPS<1, 22, 23> gpsclass;
+gpsclass* gps = new gpsclass(display);
+
+#include "WLAN.hpp"
+typedef WLAN<wifissid, wifipsk, esp_name> wlanclass;
+wlanclass* wlan = new wlanclass(display);
+
+#include "LORA.hpp"
+typedef LORA<19, 27, 5, 18, 14, 26, 868100000> loraclass;
+loraclass* lora = new loraclass(display);
+
+#include "LED.hpp"
+typedef LED<2> ledclass;
+ledclass* led = new ledclass();
