@@ -1,4 +1,5 @@
-#include "include\MicroNMEA.h"
+//#include "include\MicroNMEA.h"
+#include <MicroNMEA.h>
 #include <mutex>
 
 template <int serial_pin, int pin_tx, int pin_rx>

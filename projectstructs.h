@@ -10,8 +10,8 @@ struct gpsInfoField {
 };
 
 struct macInfoField {
-  String mac_Address; // 100 character array
-  String mac_RSSI; // 100 character array
-  String mac_Channel;
-  String mac_SSID;
+  String mac_Address = "000000000000"; // 12 character array
+  String mac_RSSI = "0000"; // 4 character array
+  String mac_Channel = "00";
+  String mac_SSID = "";
 };

@@ -1,5 +1,6 @@
 #define DEBUG_OLEDDISPLAY(...) Serial.printf( __VA_ARGS__ )
-#include "include/SSD1306.h"
+//#include "include/SSD1306.h"
+#include <SSD1306.h>
 
 template <int pin_address, int pin_sda, int pin_scl, int pin_display>
 class OLED {
@@ -52,19 +53,6 @@ public:
     Serial.println("Long: " + String(gpsInfo.longitude, 6));
     Serial.println("HDOP: " + String(gpsInfo.HDOP, 6));
     Serial.println("Fix Time: " + String(gpsInfo.hour < 10 ? "0" : "") + String(gpsInfo.hour) + String(gpsInfo.minute < 10 ? "0" : "") + String(gpsInfo.minute) + String(gpsInfo.second < 10 ? "0" : "") + String(gpsInfo.second));
-  }
-  void wifi(macInfoField *macStrings, uint8_t size)
-  {
-    this->d->clear();
-    this->d->drawString(0, 0, "Networks found: "+ String(size));
-    Serial.println("################################################");
-    Serial.println("Networks found: " + String(size));
-    for (int i = 0; i < size; i++) {
-      this->d->drawString(0, ((i * 10) + 10), macStrings[i].mac_Address);
-      this->d->drawString(100, ((i * 10) + 10), macStrings[i].mac_RSSI);
-      Serial.println(macStrings[i].mac_Address + " " + macStrings[i].mac_RSSI + " ("+ macStrings[i].mac_SSID+")");
-    }
-    this->d->display();
   }
   void box(String text, uint8_t prog) {
     this->d->clear();

@@ -20,7 +20,7 @@ void setup () {
 
 void loop () {
   aOTA->check();
-  display->wifi(wlan->getWifiData(), wlan->size);
+  wlan->show();
   delay(1000);
   display->gps(gps->getGPSData());
   delay(1000);
@@ -51,7 +51,7 @@ void wlan_runner() {
 
 void send_runner() {
   while (true) {
-    lora->send(wlan->getWifiData(), gps->getGPSData(), wlan->size);
+    lora->send(wlan, gps->getGPSData());
     led->blink();
     delay(100);
   }

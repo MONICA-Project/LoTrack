@@ -1,4 +1,5 @@
-#include "include/LoRa.h"
+//#include "include/LoRa.h"
+#include <LoRa.h>
 
 template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band>
 class LORA {
@@ -21,23 +22,23 @@ public:
       this->_lora_enabled = true;
     }
   }
-  void send(macInfoField* macs, gpsInfoField gps, uint8_t mac_l) {
+  void send(wlanclass* wlan, gpsInfoField gps) {
     this->lora->beginPacket();
-    for (int i = 0; i < mac_l; i++) { //WLAN 12+1+4+1+2+1 = 21 Char
-      this->lora->print(macs[i].mac_Address); // 12 Char
+    wlan->lock();
+    for (int i = 0; i < wlan->size; i++) { //WLAN 12+1+4+1+2+1 = 21 Char
+      this->lora->print(wlan->data[i].mac_Address); // 12 Char
       this->lora->print(",");
-      this->lora->print(macs[i].mac_RSSI); // 4 Char
+      this->lora->print(wlan->data[i].mac_RSSI); // 4 Char
       this->lora->print(",");
-      this->lora->println(macs[i].mac_Channel); // 2 Char + ln (1 Char)
+      this->lora->println(wlan->data[i].mac_Channel); // 2 Char + ln (1 Char)
     }
-    //Gps 8+1+8+1+6 = 24 Char
-    this->lora->print(gps.latitude, 8);
-    this->lora->print(",");
-    this->lora->print(gps.longitude, 8);
-    this->lora->print(",");
-    this->lora->print(gps.hour<10?"0"+ String(gps.hour):String(gps.hour));
-    this->lora->print(gps.minute<10?"0"+String(gps.minute):String(gps.minute));
-    this->lora->println(gps.second<10?"0"+String(gps.second):String(gps.second));
+    wlan->unlock();
+    //Gps 18+7+9+1 = 35 Char
+    this->lora->print(String(gps.latitude, 10) + "," + String(gps.longitude, 10) + ","); //8+1+8+1 = 18 Char
+    this->lora->print(gps.hour < 10 ? String("0") + String(gps.hour) : String(gps.hour)); //2+2+2+1 = 7 Char
+    this->lora->print(gps.minute < 10 ? String("0") + String(gps.minute) : String(gps.minute));
+    this->lora->print(gps.second < 10 ? String("0") + String(gps.second) + String(",") : String(gps.second) + String(","));
+    this->lora->println(String(gps.HDOP, 2) + "," + String(gps.Satellites) + "," + String(gps.gnssFix ? "t" : "f")); //4+1+2+1+1 = 9 Char + LN (1 Char)
     this->lora->endPacket();
   }
 private:
