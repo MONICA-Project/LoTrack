@@ -2,7 +2,7 @@
 //#include "include/SSD1306.h"
 #include <SSD1306.h>
 
-template <int pin_address, int pin_sda, int pin_scl, int pin_display>
+template <int pin_address, int pin_sda, int pin_scl, int pin_display, bool silent>
 class OLED {
 public:
   OLED() {
@@ -46,13 +46,15 @@ public:
     this->d->drawString(91, 50, ":");
     this->d->drawString(96, 50, (gpsInfo.second < 10 ? "0":"") + String(gpsInfo.second));
     this->d->display();
-    Serial.println("################################################");
-    Serial.println("GNSS FIX: " + String(gpsInfo.gnssFix));
-    Serial.println("Satellites: " + String(gpsInfo.Satellites));
-    Serial.println("Lat: " + String(gpsInfo.latitude, 6));
-    Serial.println("Long: " + String(gpsInfo.longitude, 6));
-    Serial.println("HDOP: " + String(gpsInfo.HDOP, 6));
-    Serial.println("Fix Time: " + String(gpsInfo.hour < 10 ? "0" : "") + String(gpsInfo.hour) + String(gpsInfo.minute < 10 ? "0" : "") + String(gpsInfo.minute) + String(gpsInfo.second < 10 ? "0" : "") + String(gpsInfo.second));
+    if (!silent) {
+      Serial.println("################################################");
+      Serial.println("GNSS FIX: " + String(gpsInfo.gnssFix));
+      Serial.println("Satellites: " + String(gpsInfo.Satellites));
+      Serial.println("Lat: " + String(gpsInfo.latitude, 6));
+      Serial.println("Long: " + String(gpsInfo.longitude, 6));
+      Serial.println("HDOP: " + String(gpsInfo.HDOP, 6));
+      Serial.println("Fix Time: " + String(gpsInfo.hour < 10 ? "0" : "") + String(gpsInfo.hour) + String(gpsInfo.minute < 10 ? "0" : "") + String(gpsInfo.minute) + String(gpsInfo.second < 10 ? "0" : "") + String(gpsInfo.second));
+    }
   }
   void box(String text, uint8_t prog) {
     this->d->clear();
@@ -61,7 +63,9 @@ public:
     this->d->drawHorizontalLine(0, 49, 128);
     this->d->drawProgressBar(5, 10, 115, 15, prog);
     this->display();
-    Serial.println(text);
+    if (!silent) {
+      Serial.println(text);
+    }
   }
 private:
   SSD1306Wire* d;

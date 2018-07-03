@@ -1,10 +1,10 @@
 #include <WiFi.h>
 #include <mutex>
 
-template<const char* ssid, const char* psk_key, const char* espname>
+template<const char* ssid, const char* psk_key, const char* espname, bool silent>
 class WLAN {
 public:
-  const static uint8_t size = 10;
+  const static uint8_t size = 9;
   WLAN(oledclass* disp) {
     this->display = disp;
   }
@@ -82,12 +82,16 @@ public:
     this->mtx.lock();
     this->display->clear();
     this->display->drawString(0, 0, "Networks found: " + String(this->networks));
-    Serial.println("################################################");
-    Serial.println("Networks found: " + String(this->networks));
+    if (!silent) {
+      Serial.println("################################################");
+      Serial.println("Networks found: " + String(this->networks));
+    }
     for (int i = 0; i < size; i++) {
       this->display->drawString(0, ((i * 10) + 10), this->data[i].mac_Address);
       this->display->drawString(100, ((i * 10) + 10), this->data[i].mac_RSSI);
-      Serial.println(this->data[i].mac_Address + " " + this->data[i].mac_RSSI + " " + this->data[i].mac_Channel + " (" + this->data[i].mac_SSID + ")");
+      if (!silent) {
+        Serial.println(this->data[i].mac_Address + " " + this->data[i].mac_RSSI + " " + this->data[i].mac_Channel + " (" + this->data[i].mac_SSID + ")");
+      }
     }
     this->mtx.unlock();
     this->display->display();

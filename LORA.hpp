@@ -1,7 +1,7 @@
 //#include "include/LoRa.h"
 #include <LoRa.h>
 
-template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band>
+template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band, const char* espname>
 class LORA {
 public:
   LORA(oledclass* disp) {
@@ -24,6 +24,7 @@ public:
   }
   void send(wlanclass* wlan, gpsInfoField gps) {
     this->lora->beginPacket();
+    this->lora->println(espname);
     wlan->lock();
     for (int i = 0; i < wlan->size; i++) { //WLAN 12+1+4+1+2+1 = 21 Char
       this->lora->print(wlan->data[i].mac_Address); // 12 Char

@@ -2,7 +2,7 @@
 #include <MicroNMEA.h>
 #include <mutex>
 
-template <int serial_pin, int pin_tx, int pin_rx>
+template <int serial_pin, int pin_tx, int pin_rx, bool debug>
 class GPS {
 public:
   GPS(oledclass* disp) {
@@ -19,9 +19,14 @@ public:
     nmea->clear();
     while (true) {
       char c = this->hs->read();
-      /*if (c != 255) {
-        Serial.print(c);
-      }*/
+      if (debug) {
+        if (c != 255) {
+          Serial.print(c);
+        }
+        while(Serial.available()) {
+          this->hs->write(Serial.read());
+        }
+      }
       if (nmea->process(c)) {
         mtx.lock();
         this->gpsdata.gnssFix = nmea->isValid();
