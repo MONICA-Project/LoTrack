@@ -36,10 +36,20 @@ public:
     wlan->unlock();
     //Gps 18+7+9+1 = 35 Char
     this->lora->print(String(gps.latitude, 10) + "," + String(gps.longitude, 10) + ","); //8+1+8+1 = 18 Char
-    this->lora->print(gps.hour < 10 ? String("0") + String(gps.hour) : String(gps.hour)); //2+2+2+1 = 7 Char
-    this->lora->print(gps.minute < 10 ? String("0") + String(gps.minute) : String(gps.minute));
-    this->lora->print(gps.second < 10 ? String("0") + String(gps.second) + String(",") : String(gps.second) + String(","));
-    this->lora->println(String(gps.HDOP, 2) + "," + String(gps.Satellites) + "," + String(gps.gnssFix ? "t" : "f")); //4+1+2+1+1 = 9 Char + LN (1 Char)
+    if (gps.hour < 10) { //2+2+2+1 = 7 Char
+      this->lora->print("0");
+    }
+    this->lora->print(gps.hour); 
+    if (gps.minute < 10) { 
+      this->lora->print("0");
+    }
+    this->lora->print(gps.minute);
+    if (gps.second < 10) {
+      this->lora->print("0");
+    }
+    this->lora->print(gps.second);
+    this->lora->print(",");
+    this->lora->print(String(gps.HDOP, 2) + "," + String(gps.Satellites) + "," + String(gps.gnssFix ? "t" : "f")); //4+1+2+1+1 = 9 Char + LN (1 Char)
     this->lora->endPacket();
   }
 private:

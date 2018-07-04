@@ -4,9 +4,9 @@ struct gpsInfoField {
   float longitude = 0.0;
   int Satellites = 0;
   float HDOP = 0.0;
-  int hour = 0;
-  int minute = 0;
-  int second = 0;
+  uint8_t hour = 0;
+  uint8_t minute = 0;
+  uint8_t second = 0;
 };
 
 struct macInfoField {

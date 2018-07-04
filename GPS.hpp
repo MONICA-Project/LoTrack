@@ -36,9 +36,9 @@ public:
           float longitude_mdeg = nmea->getLongitude();
           this->gpsdata.latitude = (latitude_mdeg / 1000000);
           this->gpsdata.longitude = (longitude_mdeg / 1000000);
-          this->gpsdata.hour = int(nmea->getHour());
-          this->gpsdata.minute = int(nmea->getMinute());
-          this->gpsdata.second = int(nmea->getSecond());
+          this->gpsdata.hour = nmea->getHour()%60;
+          this->gpsdata.minute = nmea->getMinute()%60;
+          this->gpsdata.second = nmea->getSecond()%60;
           float hdop_dez = nmea->getHDOP();
           this->gpsdata.HDOP = hdop_dez / 10;
         }
