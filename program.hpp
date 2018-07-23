@@ -49,7 +49,7 @@ public:
     while (true) {
       p->lora->send(p->wlan, p->gps->getGPSData());
       p->led->blink();
-      delay(100);
+      delay(5000);
     }
   }
 private:
