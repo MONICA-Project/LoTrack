@@ -1,6 +1,7 @@
 //#include "include\MicroNMEA.h"
 #include <MicroNMEA.h>
 #include <mutex>
+#include <pthread.h>
 
 template <int serial_pin, int pin_tx, int pin_rx, bool debug>
 class GPS {
@@ -18,6 +19,7 @@ public:
   void measure() {
     nmea->clear();
     while (true) {
+      pthread_mutex_lock(&this->mgp);
       char c = this->hs->read();
       if (debug) {
         if (c != 255) {
@@ -30,20 +32,17 @@ public:
       if (nmea->process(c)) {
         mtx.lock();
         this->gpsdata.gnssFix = nmea->isValid();
-        if (this->gpsdata.gnssFix) {
-          this->gpsdata.Satellites = nmea->getNumSatellites();
-          float latitude_mdeg = nmea->getLatitude();
-          float longitude_mdeg = nmea->getLongitude();
-          this->gpsdata.latitude = (latitude_mdeg / 1000000);
-          this->gpsdata.longitude = (longitude_mdeg / 1000000);
-          this->gpsdata.hour = nmea->getHour()%60;
-          this->gpsdata.minute = nmea->getMinute()%60;
-          this->gpsdata.second = nmea->getSecond()%60;
-          float hdop_dez = nmea->getHDOP();
-          this->gpsdata.HDOP = hdop_dez / 10;
-        }
+        this->gpsdata.Satellites = nmea->getNumSatellites();
+        this->gpsdata.latitude = ((float)nmea->getLatitude()) / 1000000;
+        this->gpsdata.longitude = ((float)nmea->getLongitude()) / 1000000;
+        this->gpsdata.hour = nmea->getHour()%24;
+        this->gpsdata.minute = nmea->getMinute()%60;
+        this->gpsdata.second = nmea->getSecond()%60;
+        float hdop_dez = nmea->getHDOP();
+        this->gpsdata.HDOP = hdop_dez / 10;
         mtx.unlock();
       }
+      pthread_mutex_unlock(&this->mgp);
       delay(1);
     }
   }
@@ -53,6 +52,7 @@ public:
     mtx.unlock();
     return g;
   }
+  pthread_mutex_t mgp;
 private:
   HardwareSerial* hs;
   char nmeaBuffer[100];

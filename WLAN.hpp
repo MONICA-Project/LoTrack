@@ -8,6 +8,7 @@ public:
   WLAN(oledclass* disp) {
     this->display = disp;
   }
+
   void begin() {
     this->display->box("Setup Wifi!", 20);
     this->w = new WiFiClass();
@@ -21,6 +22,7 @@ public:
       this->display->box("WiFi connected: " + String(ssid), 30);
     }
   }
+
   void measure() {
     uint8_t n = this->w->scanNetworks();
     String bssid;
@@ -54,8 +56,8 @@ public:
           }
         }
       }
-      this->mtx.lock();
-      this->networks = n;
+      this->lock();
+      this->networks = 0;
       if (n > this->size) {
         n = this->size;
       }
@@ -67,6 +69,7 @@ public:
           this->data[i].mac_RSSI = String(WiFi.RSSI(indices[i]));
           this->data[i].mac_Channel = String(WiFi.channel(indices[i]));
           this->data[i].mac_SSID = String(WiFi.SSID(indices[i]));
+          this->networks++;
         } else {
           this->data[i].mac_Address = "000000000000";
           this->data[i].mac_RSSI = "0000";
@@ -74,38 +77,29 @@ public:
           this->data[i].mac_SSID = "";
         }
       }
-      this->mtx.unlock();
+      this->unlock();
     }
   }
-  void show()
-  {
-    this->mtx.lock();
-    this->display->clear();
-    this->display->drawString(0, 0, "Networks found: " + String(this->networks));
-    if (!silent) {
-      Serial.println("################################################");
-      Serial.println("Networks found: " + String(this->networks));
-    }
-    for (int i = 0; i < size; i++) {
-      this->display->drawString(0, ((i * 10) + 10), this->data[i].mac_Address);
-      this->display->drawString(100, ((i * 10) + 10), this->data[i].mac_RSSI);
-      if (!silent) {
-        Serial.println(this->data[i].mac_Address + " " + this->data[i].mac_RSSI + " " + this->data[i].mac_Channel + " (" + this->data[i].mac_SSID + ")");
-      }
-    }
-    this->mtx.unlock();
-    this->display->display();
-  }
+
   void lock() {
     this->mtx.lock();
   }
+
   void unlock() {
     this->mtx.unlock();
   }
+
+  uint8_t getNetworks() {
+    this->lock();
+    uint8_t n = this->networks;
+    this->unlock();
+    return n;
+  }
+
   macInfoField *data = new macInfoField[this->size];
-  uint8_t networks = 0;
 private:
   WiFiClass * w = NULL;
   oledclass* display;
   std::mutex mtx;
+  uint8_t networks = 0;
 };

@@ -9,7 +9,7 @@ public:
     this->display_power();
     this->d = new SSD1306Wire(pin_address, pin_sda, pin_scl);
     this->d->init();
-    this->d->flipScreenVertically();
+    this->d->setBrightness(1);
     this->d->setFont(ArialMT_Plain_10);
 
     this->d->clear();
@@ -27,24 +27,23 @@ public:
   void clear() {
     this->d->clear();
   }
-  void gps(gpsInfoField gpsInfo) {
+  void gps(gpsInfoField gpsInfo, uint8_t networks) {
     this->d->clear();
     this->d->drawString(0, 0, "GNSS FIX:");
-    this->d->drawString(60, 0, String(gpsInfo.gnssFix));
-    this->d->drawString(0, 10, "Satellites: ");
-    this->d->drawString(60, 10, String(gpsInfo.Satellites));
-    this->d->drawString(0, 20, "Lat:");
-    this->d->drawString(60, 20, String(gpsInfo.latitude, 6));
-    this->d->drawString(0, 30, "Long:");
-    this->d->drawString(60, 30, String(gpsInfo.longitude, 6));
-    this->d->drawString(0, 40, "HDOP:");
-    this->d->drawString(60, 40, String(gpsInfo.HDOP, 2));
-    this->d->drawString(0, 50, "Fix Time:");
-    this->d->drawString(60, 50, (gpsInfo.hour < 10?"0":"") + String(gpsInfo.hour));
-    this->d->drawString(73, 50, ":");
-    this->d->drawString(78, 50, (gpsInfo.minute < 10 ? "0":"") + String(gpsInfo.minute));
-    this->d->drawString(91, 50, ":");
-    this->d->drawString(96, 50, (gpsInfo.second < 10 ? "0":"") + String(gpsInfo.second));
+    this->d->drawString(60, 0, String(gpsInfo.gnssFix ? "true" : "false"));
+    this->d->drawString(0, 8, "Satellites: ");
+    this->d->drawString(60, 8, String(gpsInfo.Satellites));
+    this->d->drawString(0, 16, "Lat:");
+    this->d->drawString(60, 16, String(gpsInfo.latitude, 6));
+    this->d->drawString(0, 24, "Long:");
+    this->d->drawString(60, 24, String(gpsInfo.longitude, 6));
+    this->d->drawString(0, 32, "HDOP:");
+    this->d->drawString(60, 32, String(gpsInfo.HDOP, 2));
+    this->d->drawString(0, 40, "Fix Time:");
+    String time = String((gpsInfo.hour < 10 ? "0" : "") + String(gpsInfo.hour)) + ":" + String((gpsInfo.minute < 10 ? "0" : "") + String(gpsInfo.minute)) + ":" + String((gpsInfo.second < 10 ? "0" : "") + String(gpsInfo.second));
+    this->d->drawString(60, 40, time);
+    this->d->drawString(0, 48, String("Networks:"));
+    this->d->drawString(60, 48, String(networks));
     this->d->display();
     if (!silent) {
       Serial.println("################################################");
