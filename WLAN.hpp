@@ -4,7 +4,7 @@
 template<const char* ssid, const char* psk_key, const char* espname, bool silent>
 class WLAN {
 public:
-  const static uint8_t size = 9;
+  const static uint8_t size = 3;
   WLAN(oledclass* disp) {
     this->display = disp;
   }

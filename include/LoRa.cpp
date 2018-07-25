@@ -399,41 +399,41 @@ void LoRaClass::setSpreadingFactor(int sf) {
 long LoRaClass::getSignalBandwidth() {
   byte bw = (readRegister(REG_MODEM_CONFIG_1) >> 4);
   switch (bw) {
-    case 0: return 7.8E3;
-    case 1: return 10.4E3;
-    case 2: return 15.6E3;
-    case 3: return 20.8E3;
-    case 4: return 31.25E3;
-    case 5: return 41.7E3;
-    case 6: return 62.5E3;
-    case 7: return 125E3;
-    case 8: return 250E3;
-    case 9: return 500E3;
+    case 0: return 7800;
+    case 1: return 10400;
+    case 2: return 15600;
+    case 3: return 20800;
+    case 4: return 31250;
+    case 5: return 41700;
+    case 6: return 62500;
+    case 7: return 125000;
+    case 8: return 250000;
+    case 9: return 500000;
   }
 }
 
 void LoRaClass::setSignalBandwidth(long sbw) {
   int bw;
 
-  if (sbw <= 7.8E3) {
+  if (sbw <= 7800) {
     bw = 0;
-  } else if (sbw <= 10.4E3) {
+  } else if (sbw <= 10400) {
     bw = 1;
-  } else if (sbw <= 15.6E3) {
+  } else if (sbw <= 15600) {
     bw = 2;
-  } else if (sbw <= 20.8E3) {
+  } else if (sbw <= 20800) {
     bw = 3;
-  } else if (sbw <= 31.25E3) {
+  } else if (sbw <= 31250) {
     bw = 4;
-  } else if (sbw <= 41.7E3) {
+  } else if (sbw <= 41700) {
     bw = 5;
-  } else if (sbw <= 62.5E3) {
+  } else if (sbw <= 62500) {
     bw = 6;
-  } else if (sbw <= 125E3) {
+  } else if (sbw <= 125000) {
     bw = 7;
-  } else if (sbw <= 250E3) {
+  } else if (sbw <= 250000) {
     bw = 8;
-  } else /*if (sbw <= 250E3)*/ {
+  } else /*if (sbw <= 500000)*/ {
     bw = 9;
   }
 
