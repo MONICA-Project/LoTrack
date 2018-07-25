@@ -15,6 +15,7 @@ public:
     if (!this->lora->begin (band)) {
       display->box("Lora Failed!", 90);
     } else {
+	  this->lora->setSignalBandwidth(62500);
       this->lora->setTxPower(17);
       //this->lora->setSignalBandwidth(7.8E3);
       this->lora->enableCrc();
