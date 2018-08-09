@@ -18,3 +18,25 @@ typedef WLAN<wifissid, wifipsk, esp_name, true> wlanclass;
 typedef LORA<19, 27, 5, 18, 14, 26, 868100000, esp_name> loraclass;
 #include "LED.hpp"
 typedef LED<2> ledclass;
+
+
+#include "projectstructs.h"
+
+namespace {
+  extern char const wifissid[] = "IoT";
+  extern char const wifipsk[] = "";
+  extern char const esp_name[] = "ESP32Lora-PS";
+}
+
+#include "RXTX.hpp"
+#include "OLED.hpp"
+typedef OLED<0x3c, 21, 22, 16, true> oledclass;
+#include "OTA.hpp"
+#include "GPS.hpp"
+typedef GPS<1, 34, 35, true> gpsclass;
+#include "WLAN.hpp"
+typedef WLAN<wifissid, wifipsk, esp_name, true> wlanclass;
+#include "LORA.hpp"
+typedef LORA<19, 27, 5, 18, 14, 26, 868090000, esp_name> loraclass;
+#include "LED.hpp"
+typedef LED<2> ledclass;
