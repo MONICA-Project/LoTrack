@@ -26,6 +26,7 @@ public:
     }
   }
   void send(wlanclass* wlan, gpsInfoField gps) {
+	this->lora->idle();
     this->lora->beginPacket();
     this->lora->println(espname);
     wlan->lock();
@@ -54,6 +55,7 @@ public:
     this->lora->print(",");
     this->lora->print(String(gps.HDOP, 2) + "," + String(gps.Satellites) + "," + String(gps.gnssFix ? "t" : "f")); //4+1+2+1+1 = 9 Char + LN (1 Char)
     this->lora->endPacket();
+	this->lora->sleep();
   }
 private:
   oledclass* display;
