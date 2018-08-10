@@ -23,7 +23,7 @@ public:
     pthread_mutex_init(&this->mwl, NULL);
     pthread_mutex_init(&this->gps->mgp, NULL);
     this->create_gps_thread();
-    this->create_wlansniffer_thread();
+    //this->create_wlansniffer_thread();
     this->create_lora_thread();
     this->display->box("Init Ok!", 100);
   }

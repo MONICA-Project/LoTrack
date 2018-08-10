@@ -15,7 +15,7 @@ public:
     if (!this->lora->begin (band)) {
       display->box("Lora Failed!", 90);
     } else {
-      this->lora->setSignalBandwidth(125000);
+      this->lora->setSignalBandwidth(31250);
       this->lora->setSpreadingFactor(8);
       this->lora->setCodingRate4(6);
       this->lora->setTxPower(17);
@@ -29,7 +29,7 @@ public:
 	this->lora->idle();
     this->lora->beginPacket();
     this->lora->println(espname);
-    wlan->lock();
+    /*wlan->lock();
     for (int i = 0; i < wlan->size; i++) { //WLAN 12+1+4+1+2+1 = 21 Char
       this->lora->print(wlan->data[i].mac_Address); // 12 Char
       this->lora->print(",");
@@ -37,7 +37,7 @@ public:
       this->lora->print(",");
       this->lora->println(wlan->data[i].mac_Channel); // 2 Char + ln (1 Char)
     }
-    wlan->unlock();
+    wlan->unlock();*/
     //Gps 18+7+9+1 = 35 Char
     this->lora->print(String(gps.latitude, 10) + "," + String(gps.longitude, 10) + ","); //8+1+8+1 = 18 Char
     if (gps.hour < 10) { //2+2+2+1 = 7 Char
