@@ -63,7 +63,7 @@ public:
       pthread_mutex_lock(&p->mdp);
       pthread_mutex_lock(&p->mwl);
       pthread_mutex_lock(&p->gps->mgp);
-      p->lora->send(p->wlan, p->gps->getGPSData());
+      p->lora->send(p->wlan, p->gps->getGPSData(),true);
       p->led->blink();
       pthread_mutex_unlock(&p->gps->mgp);
       pthread_mutex_unlock(&p->mwl);

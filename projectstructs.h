@@ -2,7 +2,7 @@ struct gpsInfoField {
   bool gnssFix = false;
   float latitude = 0.0;
   float longitude = 0.0;
-  int Satellites = 0;
+  uint8_t Satellites = 0;
   float HDOP = 0.0;
   uint8_t hour = 0;
   uint8_t minute = 0;
