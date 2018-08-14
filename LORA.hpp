@@ -13,7 +13,7 @@
 // The SX1278 offers bandwidths and spreading factor options, but only covers the lower UHF bands.
 
 
-template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band, const char* espname>
+template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band, const char* espname, bool silent>
 class LORA {
 public:
   LORA(oledclass* disp) {
@@ -28,7 +28,7 @@ public:
       display->box("Lora Failed!", 90);
     } else {
       this->lora->setSignalBandwidth(125000);
-      this->lora->setSpreadingFactor(11);
+      this->lora->setSpreadingFactor(8);
       this->lora->setCodingRate4(6);
       this->lora->setTxPower(17);
       this->lora->enableCrc();
@@ -67,6 +67,24 @@ public:
       this->lora->print(gps.second);
       this->lora->print(",");
       this->lora->print(String(gps.HDOP, 2) + "," + String(gps.Satellites) + "," + String(gps.gnssFix ? "t" : "f")); //4+1+2+1+1 = 9 Char + LN (1 Char)
+      if (!silent) {
+        Serial.println(espname);
+        Serial.print(String(gps.latitude, 10) + "," + String(gps.longitude, 10) + ",");
+        if (gps.hour < 10) { //2+2+2+1 = 7 Char
+          Serial.print("0");
+        }
+        Serial.print(gps.hour);
+        if (gps.minute < 10) {
+          Serial.print("0");
+        }
+        Serial.print(gps.minute);
+        if (gps.second < 10) {
+          Serial.print("0");
+        }
+        Serial.print(gps.second);
+        Serial.print(",");
+        Serial.println(String(gps.HDOP, 2) + "," + String(gps.Satellites) + "," + String(gps.gnssFix ? "t" : "f"));
+      }
     }
     else {
       uint8_t lora_data[29];
@@ -88,6 +106,12 @@ public:
       lora_data[27] = gps.Satellites;
       lora_data[28] = gps.gnssFix ? 1 : 0;
       this->lora->write(lora_data, 29);
+      if (!silent) {
+        for (uint8_t i = 0; i < 28; i++) {
+          Serial.print(String(lora_data[i], HEX)+" ");
+        }
+        Serial.println(String(lora_data[28], HEX));
+      }
     }
     this->lora->endPacket();
     this->lora->sleep();
