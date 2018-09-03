@@ -27,7 +27,7 @@ public:
     if (!this->lora->begin (band)) {
       display->box("Lora Failed!", 90);
     } else {
-      this->lora->setSignalBandwidth(125000);
+      this->lora->setSignalBandwidth(62500);
       this->lora->setSpreadingFactor(8);
       this->lora->setCodingRate4(6);
       this->lora->setTxPower(17);
@@ -83,11 +83,11 @@ public:
         }
         Serial.print(gps.second);
         Serial.print(",");
-        Serial.println(String(gps.HDOP, 2) + "," + String(gps.Satellites) + "," + String(gps.gnssFix ? "t" : "f"));
+        Serial.println(String(gps.HDOP, 2) + "," + String(gps.Satellites) /*+ "," + String(gps.gnssFix ? "t" : "f")*/);
       }
     }
     else {
-      uint8_t lora_data[29];
+      uint8_t lora_data[28];
       lora_data[0] = 'b';
       for (uint8_t i = 0; i < 8; i++) {
         if (strlen(espname) > i) {
@@ -104,16 +104,17 @@ public:
       lora_data[21] = gps.second;
       uint64_t hdo = *(uint64_t*)&gps.HDOP;      lora_data[26] = (hdo >> 0) & 0x7f; lora_data[25] = (hdo >> 7) & 0x7f; lora_data[24] = (hdo >> 14) & 0x7f; lora_data[23] = (hdo >> 21) & 0x7f; lora_data[22] = (hdo >> 28) & 0x0f; //5 Bytes Hdop
       lora_data[27] = gps.Satellites;
-      lora_data[28] = gps.gnssFix ? 1 : 0;
-      this->lora->write(lora_data, 29);
+      //lora_data[28] = gps.gnssFix ? 1 : 0;
+      this->lora->write(lora_data, 28);
       if (!silent) {
-        for (uint8_t i = 0; i < 28; i++) {
+        for (uint8_t i = 0; i < 27; i++) {
           Serial.print(String(lora_data[i], HEX)+" ");
         }
-        Serial.println(String(lora_data[28], HEX));
+        Serial.println(String(lora_data[27], HEX));
       }
     }
     this->lora->endPacket();
+    delay(5);
     this->lora->sleep();
   }
 private:

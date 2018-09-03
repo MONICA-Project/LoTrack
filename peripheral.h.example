@@ -38,7 +38,7 @@ typedef GPS<1, 34, 35, true> gpsclass;
 #include "WLAN.hpp"
 typedef WLAN<wifissid, wifipsk, esp_name, true> wlanclass;
 #include "LORA.hpp"
-typedef LORA<19, 27, 5, 18, 14, 26, 868095000, esp_name> loraclass;
+typedef LORA<19, 27, 5, 18, 14, 26, 868095000, esp_name, true> loraclass;
 #include "LED.hpp"
 typedef LED<2> ledclass;
 
