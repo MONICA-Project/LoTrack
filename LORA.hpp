@@ -16,16 +16,16 @@
 template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band, const char* espname, bool silent>
 class LORA {
 public:
-  LORA(oledclass* disp) {
+  LORA(wlanclass* disp) {
     this->display = disp;
     this->lora = new LoRaClass();
     SPI.begin (pin_sck, pin_miso, pin_mosi, pin_ss);
     this->lora->setPins (pin_ss, pin_rst, pin_dio);
   }
   void begin() {
-    display->box("Setup Lora!", 80);
+    this->display->box("Setup Lora!", 80);
     if (!this->lora->begin (band)) {
-      display->box("Lora Failed!", 90);
+      this->display->box("Lora Failed!", 90);
     } else {
       this->lora->setSignalBandwidth(62500);
       this->lora->setSpreadingFactor(8);
@@ -33,7 +33,7 @@ public:
       this->lora->setTxPower(17);
       this->lora->enableCrc();
       //this->lora->disableCrc();
-      display->box("Lora successful", 90);
+      this->display->box("Lora successful", 90);
       this->_lora_enabled = true;
     }
   }
@@ -68,22 +68,21 @@ public:
       this->lora->print(",");
       this->lora->print(String(gps.HDOP, 2) + "," + String(gps.Satellites) + "," + String(gps.gnssFix ? "t" : "f")); //4+1+2+1+1 = 9 Char + LN (1 Char)
       if (!silent) {
-        Serial.println(espname);
-        Serial.print(String(gps.latitude, 10) + "," + String(gps.longitude, 10) + ",");
-        if (gps.hour < 10) { //2+2+2+1 = 7 Char
-          Serial.print("0");
+        this->display->log(String(espname) + String("\n"));
+        String g = String(gps.latitude, 10) + String(",") + String(gps.longitude, 10) + String(",");
+        if (gps.hour < 10) {
+          g += String("0");
         }
-        Serial.print(gps.hour);
+        g += String(gps.hour);
         if (gps.minute < 10) {
-          Serial.print("0");
+          g += String("0");
         }
-        Serial.print(gps.minute);
+        g += String(gps.minute);
         if (gps.second < 10) {
-          Serial.print("0");
+          g += String("0");
         }
-        Serial.print(gps.second);
-        Serial.print(",");
-        Serial.println(String(gps.HDOP, 2) + "," + String(gps.Satellites) /*+ "," + String(gps.gnssFix ? "t" : "f")*/);
+        g += String(gps.second) + String(",") + String(gps.HDOP, 2) + String(",") + String(gps.Satellites) /*+ "," + String(gps.gnssFix ? "t" : "f")*/;
+        this->display->log(g + String("\n"));
       }
     }
     else {
@@ -118,7 +117,7 @@ public:
     this->lora->sleep();
   }
 private:
-  oledclass* display;
+  wlanclass * display;
   LoRaClass* lora;
   bool _lora_enabled = false;
 };

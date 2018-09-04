@@ -6,15 +6,15 @@
 template <int serial_pin, int pin_tx, int pin_rx, bool debug>
 class GPS {
 public:
-  GPS(oledclass* disp) {
+  GPS(wlanclass* disp) {
     this->display = disp;
     this->hs = new HardwareSerial(serial_pin);
     this->nmea = new MicroNMEA(this->nmeaBuffer, sizeof(this->nmeaBuffer));
   }
   void begin() {
-    display->box("Gps Setup!", 60);
+    this->display->box("Gps Setup!", 60);
     this->hs->begin(9600, SERIAL_8N1, pin_rx, pin_tx);
-    display->box("Gps Successfull", 70);
+    this->display->box("Gps Successfull", 70);
   }
   void measure() {
     nmea->clear();
@@ -57,7 +57,7 @@ private:
   HardwareSerial* hs;
   char nmeaBuffer[100];
   MicroNMEA* nmea;
-  oledclass* display;
+  wlanclass* display;
   gpsInfoField gpsdata;
   std::mutex mtx;
 };

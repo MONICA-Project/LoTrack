@@ -2,17 +2,17 @@
 
 class OTA {
 public:
-  OTA(oledclass* disp) {
+  OTA(wlanclass* disp) {
     this->display = disp;
   }
   void setup() {
-    display->box("OTA Setup!", 40);
+    this->display->box("OTA Setup!", 40);
     this->onStart();
     this->onEnd();
     this->onProgress();
     this->onError();
     ArduinoOTA.begin();
-    display->box("OTA Successfull", 50);
+    this->display->box("OTA Successfull", 50);
   }
   void onStart() {
     ArduinoOTA.onStart([this]() {
@@ -24,68 +24,67 @@ public:
 
       // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
       Serial.println("Start updating " + type);
-      display->clear();
-      display->drawString(0, 0, "Start updating:");
-      display->display();
+      this->display->clear();
+      this->display->drawString(0, 0, "Start updating:");
+      this->display->display();
     });
   }
   void onEnd() {
     ArduinoOTA.onEnd([this]() {
       Serial.println("\nEnd");
-      display->drawString(0, 40, "End");
-      display->display();
+      this->display->drawString(0, 40, "End");
+      this->display->display();
     });
   }
   void onProgress() {
     ArduinoOTA.onProgress([this](unsigned int progress, unsigned int total) {
       Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-      display->clear();
-      display->drawString(0, 0, "Start updating:");
-      display->drawString(0, 20, "Progress:");
-      display->drawString(60, 20, "  ");
-      display->display();
-      display->drawString(60, 20, String((progress / (total / 100))));
-      display->display();
+      this->display->clear();
+      this->display->drawString(0, 0, "Start updating:");
+      this->display->drawString(0, 20, "Progress:");
+      this->display->drawString(60, 20, "  ");
+      this->display->display();
+      this->display->drawString(60, 20, String((progress / (total / 100))));
+      this->display->display();
     });
   }
   void onError() {
     ArduinoOTA.onError([this](ota_error_t error) {
       Serial.printf("Error[%u]: ", error);
-      display->drawString(0, 40, "Error: ");
-      display->display();
+      this->display->drawString(0, 40, "Error: ");
+      this->display->display();
       if (error == OTA_AUTH_ERROR) {
         Serial.println("Auth Failed");
-        display->drawString(60, 40, "Auth Failed");
-        display->display();
+        this->display->drawString(60, 40, "Auth Failed");
+        this->display->display();
       }
       else if (error == OTA_BEGIN_ERROR) {
         Serial.println("Begin Failed");
-        display->drawString(60, 40, "Begin Failed");
-        display->display();
+        this->display->drawString(60, 40, "Begin Failed");
+        this->display->display();
       }
       else if (error == OTA_CONNECT_ERROR) {
         Serial.println("Connect Failed");
-        display->drawString(60, 40, "Connect Failed");
-        display->display();
+        this->display->drawString(60, 40, "Connect Failed");
+        this->display->display();
       }
       else if (error == OTA_RECEIVE_ERROR) {
         Serial.println("Receive Failed");
-        display->drawString(60, 40, "Receive Failed");
-        display->display();
+        this->display->drawString(60, 40, "Receive Failed");
+        this->display->display();
       }
       else if (error == OTA_END_ERROR) {
         Serial.println("End Failed");
-        display->drawString(60, 40, "End Failed");
-        display->display();
+        this->display->drawString(60, 40, "End Failed");
+        this->display->display();
       }
     });
   }
   void check() {
     ArduinoOTA.handle();
-    delay(50);
   }
 private:
-  oledclass* display;
+  wlanclass* display;
 };
 
 // Port defaults to 8266

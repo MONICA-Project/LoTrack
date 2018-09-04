@@ -6,10 +6,10 @@ public:
   Program() {
     this->s = new RXTX();
     this->display = new oledclass();
-    this->aOTA = new OTA(display);
-    this->gps = new gpsclass(display);
     this->wlan = new wlanclass(display);
-    this->lora = new loraclass(display);
+    this->aOTA = new OTA(this->wlan);
+    this->gps = new gpsclass(this->wlan);
+    this->lora = new loraclass(this->wlan);
     this->led = new ledclass();
   }
 
@@ -23,18 +23,14 @@ public:
     pthread_mutex_init(&this->mwl, NULL);
     pthread_mutex_init(&this->gps->mgp, NULL);
     this->create_gps_thread();
-    //this->create_wlansniffer_thread();
+    this->create_wlansniffer_thread();
     this->create_lora_thread();
     this->display->box("Init Ok!", 100);
   }
 
   void loop() {
     pthread_mutex_lock(&this->mdp);
-    this->aOTA->check();
-    this->display->gps(this->gps->getGPSData(), this->wlan->getNetworks());
-    //delay(500);
-    //this->display->clear();
-    //this->display->display();
+    this->display->gps(this->gps->getGPSData(), 0);
     pthread_mutex_unlock(&this->mdp);
     delay(1000);
   }
@@ -49,10 +45,12 @@ public:
     Program *p = ((Program *)obj_class);
     //Serial.println("WLAN Runner started!");
     while (true) {
-      pthread_mutex_lock(&p->mwl);
+      /*pthread_mutex_lock(&p->mwl);
       p->wlan->measure();
-      pthread_mutex_unlock(&p->mwl);
-      delay(1000);
+      pthread_mutex_unlock(&p->mwl);*/
+      p->aOTA->check();
+      p->wlan->server_clienthandle();
+      delay(100);
     }
   }
 
