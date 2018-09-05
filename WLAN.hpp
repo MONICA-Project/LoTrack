@@ -2,7 +2,7 @@
 #include <WiFiServer.h>
 #include <mutex>
 
-template<const char* ssid, const char* psk_key, const char* espname, int server_clients, int server_port, bool silent>
+template<const char* ssid, const char* psk_key, const char* espname, int server_clients, int server_port, bool debug>
 class WLAN {
   public:
     WLAN(oledclass* disp) {
@@ -43,6 +43,7 @@ class WLAN {
               this->serverClients[i].stop();
             }
             this->serverClients[i] = this->s->available();
+            this->clients++;
             this->serverClients[i].print(String("Hello on the Telnet of ") + String(espname) + String("\r\n"));
             this->log(String("New Client: ") + String(i) + String("\n"));
             break;
@@ -57,14 +58,31 @@ class WLAN {
       }
     }
 
+    uint8_t getNumClients() {
+      return this->clients;
+    }
+
+    void stop() {
+      if(this->_server_connected) {
+        this->s->stop();
+        this->_server_connected = false;
+      }
+      this->w->mode(WIFI_OFF);
+      this->_wifi_connected = false;
+      btStop();
+    }
+
     #pragma region Logger
     void log(String text) {
-      if(!silent) {
-        Serial.println(text);
+      if(debug) {
+        Serial.print(text);
+      }
+      if(text.substring(text.length() - 1).equals("\n")) {
+        text = text + String("\r");
       }
       for(uint8_t i = 0; i < server_clients; i++) {
         if(this->serverClients[i] && this->serverClients[i].connected()) {
-          this->serverClients[i].print(text + String("\r"));
+          this->serverClients[i].print(text);
         }
       }
     }
@@ -74,8 +92,9 @@ class WLAN {
     void log(const char text) {
       this->log(String(text));
     }
-    void box(String text, uint8_t prog) {
-      this->oled->box(text, prog);
+    void box(String text, uint8_t percent) {
+      this->oled->box(text, percent);
+      this->log(text + String("\n"));
     }
     void clear() {
       this->oled->clear();
@@ -86,6 +105,17 @@ class WLAN {
     }
     void display() {
       this->oled->display();
+    }
+    void gps(gpsInfoField gpsInfo, float battery) {
+      this->oled->gps(gpsInfo, battery);
+      this->log(String("################################################\n"));
+      this->log(String("GNSS FIX: ") + String(gpsInfo.gnssFix) + String("\n"));
+      this->log(String("Satellites: ") + String(gpsInfo.Satellites) + String("\n"));
+      this->log(String("Lat: ") + String(gpsInfo.latitude, 6) + String("\n"));
+      this->log(String("Long: ") + String(gpsInfo.longitude, 6) + String("\n"));
+      this->log(String("HDOP: ") + String(gpsInfo.HDOP, 6) + String("\n"));
+      this->log(String("Fix Time: ") + String(gpsInfo.hour < 10 ? "0" : "") + String(gpsInfo.hour) + String(gpsInfo.minute < 10 ? "0" : "") + String(gpsInfo.minute) + String(gpsInfo.second < 10 ? "0" : "") + String(gpsInfo.second) + String("\n"));
+      this->log(String("Battery: ") + String(battery, 2) + String("\n"));
     }
     #pragma endregion
 
@@ -166,6 +196,7 @@ class WLAN {
     oledclass* oled;
     std::mutex mtx;
     uint8_t networks = 0;
+    uint8_t clients = 0;
 
     bool server_connect() {
       if(this->_wifi_connected) {

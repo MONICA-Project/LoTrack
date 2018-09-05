@@ -6,15 +6,15 @@
 template <int serial_pin, int pin_tx, int pin_rx, bool debug>
 class GPS {
 public:
-  GPS(wlanclass* disp) {
-    this->display = disp;
+  GPS(wlanclass* wlanclass) {
+    this->wlan = wlanclass;
     this->hs = new HardwareSerial(serial_pin);
     this->nmea = new MicroNMEA(this->nmeaBuffer, sizeof(this->nmeaBuffer));
   }
   void begin() {
-    this->display->box("Gps Setup!", 60);
+    this->wlan->box("Gps Setup!", 60);
     this->hs->begin(9600, SERIAL_8N1, pin_rx, pin_tx);
-    this->display->box("Gps Successfull", 70);
+    this->wlan->box("Gps Successfull", 70);
   }
   void measure() {
     nmea->clear();
@@ -54,10 +54,10 @@ public:
   }
   pthread_mutex_t mgp;
 private:
-  HardwareSerial* hs;
+  HardwareSerial * hs;
   char nmeaBuffer[100];
-  MicroNMEA* nmea;
-  wlanclass* display;
+  MicroNMEA * nmea;
+  wlanclass * wlan;
   gpsInfoField gpsdata;
   std::mutex mtx;
 };

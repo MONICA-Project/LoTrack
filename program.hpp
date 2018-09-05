@@ -5,87 +5,96 @@ class Program {
 public:
   Program() {
     this->s = new RXTX();
-    this->display = new oledclass();
-    this->wlan = new wlanclass(display);
-    this->aOTA = new OTA(this->wlan);
+    this->led = new ledclass();
+    this->batt = new battclass();
+    this->wlan = new wlanclass(new oledclass());
+    this->aOTA = new OTA(this->wlan, this->led);
     this->gps = new gpsclass(this->wlan);
     this->lora = new loraclass(this->wlan);
-    this->led = new ledclass();
   }
 
   void setup() {
+    this->led->on();
     this->wlan->begin();
     this->aOTA->setup();
     this->gps->begin();
     this->lora->begin();
-    this->display->box("Create Threads!", 95);
-    pthread_mutex_init(&this->mdp, NULL);
-    pthread_mutex_init(&this->mwl, NULL);
+    this->wlan->box("Create Threads!", 95);
+    pthread_mutex_init(&this->mutex_display, NULL);
     pthread_mutex_init(&this->gps->mgp, NULL);
     this->create_gps_thread();
     this->create_wlansniffer_thread();
     this->create_lora_thread();
-    this->display->box("Init Ok!", 100);
+    this->wlan->box("Init Ok!", 100);
+    this->led->off();
   }
 
   void loop() {
-    pthread_mutex_lock(&this->mdp);
-    this->display->gps(this->gps->getGPSData(), 0);
-    pthread_mutex_unlock(&this->mdp);
-    delay(1000);
+    pthread_mutex_lock(&this->mutex_display);
+    this->wlan->gps(this->gps->getGPSData(), this->batt->getBattery());
+    pthread_mutex_unlock(&this->mutex_display);
+    delay(5000);
   }
 
   static void *gps_runner(void *obj_class) {
     Program *p = ((Program *)obj_class);
-    //Serial.println("GPS Runner started!");
+    p->wlan->log(String("GPS Runner started!\n"));
     p->gps->measure();
   }
 
   static void *wlan_runner(void *obj_class) {
     Program *p = ((Program *)obj_class);
-    //Serial.println("WLAN Runner started!");
-    while (true) {
-      /*pthread_mutex_lock(&p->mwl);
-      p->wlan->measure();
-      pthread_mutex_unlock(&p->mwl);*/
+    p->wlan->log(String("WLAN Runner started!\n"));
+    uint16_t count = 0;
+    bool loop = true;
+    while (loop) {
       p->aOTA->check();
       p->wlan->server_clienthandle();
+      if(count > 600) {
+        if(p->wlan->getNumClients() != 0) {
+          p->wlan->log("Wirless not shut down, Client connected!\n");
+        } else {
+          p->wlan->log("Wirless shutting down now!\n");
+          loop = false;
+          p->wlan->stop();
+        }
+        count = 0;
+      } else {
+        count++;
+      }
       delay(100);
     }
   }
 
   static void *lora_runner(void *obj_class) {
     Program *p = ((Program *)obj_class);
-    //Serial.println("LORA Runner started!");
+    p->wlan->log(String("LORA Runner started!\n"));
     while (true) {
-      pthread_mutex_lock(&p->mdp);
-      pthread_mutex_lock(&p->mwl);
+      pthread_mutex_lock(&p->mutex_display);
       pthread_mutex_lock(&p->gps->mgp);
-      p->lora->send(p->wlan, p->gps->getGPSData(),false);
+      p->lora->send(p->gps->getGPSData(), p->batt->convert(p->batt->getBattery()), false);
       p->led->blink();
       pthread_mutex_unlock(&p->gps->mgp);
-      pthread_mutex_unlock(&p->mwl);
-      pthread_mutex_unlock(&p->mdp);
-      delay(5000);
+      pthread_mutex_unlock(&p->mutex_display);
+      delay(30000);
     }
   }
 
 private:
   RXTX * s;
-  oledclass* display;
-  OTA* aOTA;
-  gpsclass* gps;
-  wlanclass* wlan;
-  loraclass* lora;
-  ledclass* led;
-  pthread_mutex_t mdp;
-  pthread_mutex_t mwl;
+  OTA * aOTA;
+  gpsclass * gps;
+  wlanclass * wlan;
+  loraclass * lora;
+  ledclass * led;
+  battclass * batt;
+  pthread_mutex_t mutex_display;
   
   void create_gps_thread() {
     pthread_t thread;
     int return_value = pthread_create(&thread, NULL, &this->gps_runner, this);
     if (return_value) {
-      Serial.println("Failed to Start GPS-Runner");
+      this->wlan->log(String("Failed to Start GPS-Runner!\n"));
     }
   }
 
@@ -93,7 +102,7 @@ private:
     pthread_t thread;
     int return_value = pthread_create(&thread, NULL, &this->wlan_runner, this);
     if (return_value) {
-      Serial.println("Failed to Start WLAN-Runner");
+      this->wlan->log(String("Failed to Start WLAN-Runner!\n"));
     }
   }
 
@@ -101,7 +110,7 @@ private:
     pthread_t thread;
     int return_value = pthread_create(&thread, NULL, &this->lora_runner, this);
     if (return_value) {
-      Serial.println("Failed to Start LORA-Runner");
+      this->wlan->log(String("Failed to Start LORA-Runner!\n"));
     }
   }
 };
