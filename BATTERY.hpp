@@ -24,8 +24,6 @@ class Battery {
         return 3;
       } else if(batteryValue > 3.72) {
         return 2;
-      } else if(batteryValue > 3.72) {
-        return 2;
       } else if(batteryValue > 3.69) {
         return 1;
       }
