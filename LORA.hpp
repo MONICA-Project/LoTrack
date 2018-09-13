@@ -37,7 +37,7 @@ public:
       this->_lora_enabled = true;
     }
   }
-  void send(gpsInfoField gps, uint8_t batt, bool as_bytes = false) {
+  void send(gpsInfoField gps, float batt, bool as_bytes = false) {
     this->lora->idle();
     this->lora->beginPacket();
     if (!as_bytes) {
@@ -57,7 +57,7 @@ public:
       }
       this->lora->print(gps.second);
       this->lora->print(",");
-      this->lora->print(String(gps.HDOP, 2) + "," + String(batt)); //4+1+2+1+1 = 9 Char + LN (1 Char)
+      this->lora->print(String(gps.HDOP, 2) + "," + String(batt,2)); //4+1+2+1+1 = 9 Char + LN (1 Char)
       /// Logging
       this->wlan->log(String("################################################\n"));
       this->wlan->log(String(espname) + String("\n"));
@@ -73,7 +73,7 @@ public:
       if (gps.second < 10) {
         g += String("0");
       }
-      g += String(gps.second) + String(",") + String(gps.HDOP, 2) + String(",") + String(batt);
+      g += String(gps.second) + String(",") + String(gps.HDOP, 2) + String(",") + String(batt,2);
       this->wlan->log(g + String("\n"));
     }
     else {

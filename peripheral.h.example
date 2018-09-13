@@ -46,23 +46,47 @@ typedef LED<2> ledclass;
 ////////////// V3 //////////////////////
 #include "projectstructs.h"
 
-#define DISPLAY_OFF true
+namespace {
+  extern char const wifissid[] = "Blubb-IoT";
+  extern char const wifipsk[] = "iotisttoll";
+  extern char const esp_name[] = "A";
+}
+
+#include "RXTX.hpp"
+#include "LED.hpp"
+typedef LED<13> ledclass;
+#include "OLED.hpp"
+typedef OLED<0x3c, 21, 22, 16, false> oledclass;
+#include "WLAN.hpp"
+typedef WLAN<wifissid, wifipsk, esp_name, 2, 23, true> wlanclass;
+#include "OTA.hpp"
+#include "GPS.hpp"
+typedef GPS<1, 27, 34, false> gpsclass;
+#include "LORA.hpp"
+typedef LORA<19, 18, 5, 21, 4, 36, 868095000, esp_name> loraclass;
+#include "BATTERY.hpp"
+typedef Battery<35> battclass;
+
+////////////// V3-Julian ///////////////////
+#include "projectstructs.h"
 
 namespace {
   extern char const wifissid[] = "Blubb-IoT";
   extern char const wifipsk[] = "iotisttoll";
-  extern char const esp_name[] = "Lora-002";
+  extern char const esp_name[] = "G";
 }
 
 #include "RXTX.hpp"
-#include "OLED.hpp"
-typedef OLED<0x3c, 21, 22, 16, false> oledclass;
-#include "OTA.hpp"
-#include "GPS.hpp"
-typedef GPS<1, 27, 34, false> gpsclass;
-#include "WLAN.hpp"
-typedef WLAN<wifissid, wifipsk, esp_name, false> wlanclass;
-#include "LORA.hpp"
-typedef LORA<19, 18, 5, 21, 4, 36, 868095000, esp_name, false> loraclass;
 #include "LED.hpp"
 typedef LED<13> ledclass;
+#include "OLED.hpp"
+typedef OLED<0x3c, 21, 22, 16, false> oledclass;
+#include "WLAN.hpp"
+typedef WLAN<wifissid, wifipsk, esp_name, 2, 23, true> wlanclass;
+#include "OTA.hpp"
+#include "GPS.hpp"
+typedef GPS<1, 39, 34, false> gpsclass;
+#include "LORA.hpp"
+typedef LORA<19, 18, 5, 4, 21, 36, 868095000, esp_name> loraclass;
+#include "BATTERY.hpp"
+typedef Battery<35> battclass;

@@ -72,11 +72,11 @@ public:
     while (true) {
       pthread_mutex_lock(&p->mutex_display);
       pthread_mutex_lock(&p->gps->mgp);
-      p->lora->send(p->gps->getGPSData(), p->batt->convert(p->batt->getBattery()), false);
+      p->lora->send(p->gps->getGPSData(), p->batt->getBattery(), false);
       p->led->blink();
       pthread_mutex_unlock(&p->gps->mgp);
       pthread_mutex_unlock(&p->mutex_display);
-      delay(30000);
+      delay(20000);
     }
   }
 
