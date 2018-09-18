@@ -1,12 +1,19 @@
 struct gpsInfoField {
-  bool gnssFix = false;
-  float latitude = 0.0;
-  float longitude = 0.0;
+  bool fix = false;
+  uint8_t fixtype = 1;
+  float latitude = 0;
+  float longitude = 0;
+  float height = 0;
   uint8_t Satellites = 0;
-  float HDOP = 0.0;
-  uint8_t hour = 0;
-  uint8_t minute = 0;
-  uint8_t second = 0;
+  float hdop = 0;
+  float pdop = 0;
+  float vdop = 0;
+  float direction = 0;
+  float speed = 0;
+  String time = "000000";
+  uint8_t day = 0;
+  uint8_t month = 0;
+  uint16_t year = 0;
 };
 
 struct macInfoField {

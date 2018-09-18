@@ -8,7 +8,7 @@ public:
     this->led = new ledclass();
     this->batt = new battclass();
     this->wlan = new wlanclass(new oledclass());
-    this->aOTA = new OTA(this->wlan, this->led);
+    this->aOTA = new otaclass(this->wlan, this->led);
     this->gps = new gpsclass(this->wlan);
     this->lora = new loraclass(this->wlan);
   }
@@ -82,7 +82,7 @@ public:
 
 private:
   RXTX * s;
-  OTA * aOTA;
+  otaclass * aOTA;
   gpsclass * gps;
   wlanclass * wlan;
   loraclass * lora;

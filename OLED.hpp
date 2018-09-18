@@ -1,12 +1,12 @@
 #include <SSD1306Wire.h>
   
-template <int pin_address, int pin_sda, int pin_scl, int pin_display, bool display_on>
+template <int pin_sda, int pin_scl, int pin_display, bool display_on>
 class OLED {
   public:
     OLED() {
       if(display_on) {
         this->display_power();
-        this->d = new SSD1306Wire(pin_address, pin_sda, pin_scl);
+        this->d = new SSD1306Wire(0x3c, pin_sda, pin_scl);
         this->d->init();
         this->d->setBrightness(1);
         this->d->setFont(ArialMT_Plain_10);
@@ -37,7 +37,7 @@ class OLED {
       if(display_on) {
         this->d->clear();
         this->d->drawString(0, 0, "GNSS FIX:");
-        this->d->drawString(60, 0, String(gpsInfo.gnssFix ? "true" : "false"));
+        this->d->drawString(60, 0, String(gpsInfo.fix ? "true" : "false"));
         this->d->drawString(0, 8, "Satellites: ");
         this->d->drawString(60, 8, String(gpsInfo.Satellites));
         this->d->drawString(0, 16, "Lat:");
@@ -45,10 +45,9 @@ class OLED {
         this->d->drawString(0, 24, "Long:");
         this->d->drawString(60, 24, String(gpsInfo.longitude, 6));
         this->d->drawString(0, 32, "HDOP:");
-        this->d->drawString(60, 32, String(gpsInfo.HDOP, 2));
+        this->d->drawString(60, 32, String(gpsInfo.hdop, 2));
         this->d->drawString(0, 40, "Fix Time:");
-        String time = String((gpsInfo.hour < 10 ? "0" : "") + String(gpsInfo.hour)) + ":" + String((gpsInfo.minute < 10 ? "0" : "") + String(gpsInfo.minute)) + ":" + String((gpsInfo.second < 10 ? "0" : "") + String(gpsInfo.second));
-        this->d->drawString(60, 40, time);
+        this->d->drawString(60, 40, gpsInfo.time);
         this->d->drawString(0, 48, String("Battery:"));
         this->d->drawString(60, 48, String(battery, 2));
         this->d->display();

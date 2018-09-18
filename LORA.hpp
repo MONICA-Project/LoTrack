@@ -43,37 +43,13 @@ public:
     if (!as_bytes) {
       this->lora->println(espname);
       //Gps 18+7+9+1 = 35 Char
-      this->lora->print(String(gps.latitude, 10) + "," + String(gps.longitude, 10) + ","); //8+1+8+1 = 18 Char
-      if (gps.hour < 10) { //2+2+2+1 = 7 Char
-        this->lora->print("0");
-      }
-      this->lora->print(gps.hour);
-      if (gps.minute < 10) {
-        this->lora->print("0");
-      }
-      this->lora->print(gps.minute);
-      if (gps.second < 10) {
-        this->lora->print("0");
-      }
-      this->lora->print(gps.second);
-      this->lora->print(",");
-      this->lora->print(String(gps.HDOP, 2) + "," + String(batt,2)); //4+1+2+1+1 = 9 Char + LN (1 Char)
+      this->lora->print(String(gps.latitude, 6) + "," + String(gps.longitude, 6) + ","); //8+1+8+1 = 18 Char
+      this->lora->print(gps.time + ","); //7 Char
+      this->lora->print(String(gps.hdop, 2) + "," + String(batt,2)); //4+1+2+1+1 = 9 Char + LN (1 Char)
       /// Logging
       this->wlan->log(String("################################################\n"));
       this->wlan->log(String(espname) + String("\n"));
-      String g = String(gps.latitude, 10) + String(",") + String(gps.longitude, 10) + String(",");
-      if (gps.hour < 10) {
-        g += String("0");
-      }
-      g += String(gps.hour);
-      if (gps.minute < 10) {
-        g += String("0");
-      }
-      g += String(gps.minute);
-      if (gps.second < 10) {
-        g += String("0");
-      }
-      g += String(gps.second) + String(",") + String(gps.HDOP, 2) + String(",") + String(batt,2);
+      String g = String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(batt,2);
       this->wlan->log(g + String("\n"));
     }
     else {
@@ -89,10 +65,10 @@ public:
       }
       uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[13] = (lat >> 0) & 0x7f; lora_data[12] = (lat >> 7) & 0x7f; lora_data[11] = (lat >> 14) & 0x7f; lora_data[10] = (lat >> 21) & 0x7f; lora_data[9] =  (lat >> 28) & 0x0f; //5 Bytes Lat
       uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[18] = (lon >> 0) & 0x7f; lora_data[17] = (lon >> 7) & 0x7f; lora_data[16] = (lon >> 14) & 0x7f; lora_data[15] = (lon >> 21) & 0x7f; lora_data[14] = (lon >> 28) & 0x0f; //5 Bytes Lon
-      lora_data[19] = gps.hour;
-      lora_data[20] = gps.minute;
-      lora_data[21] = gps.second;
-      uint64_t hdo = *(uint64_t*)&gps.HDOP;      lora_data[26] = (hdo >> 0) & 0x7f; lora_data[25] = (hdo >> 7) & 0x7f; lora_data[24] = (hdo >> 14) & 0x7f; lora_data[23] = (hdo >> 21) & 0x7f; lora_data[22] = (hdo >> 28) & 0x0f; //5 Bytes Hdop
+      lora_data[19] = String(gps.time.substring(0, 2)).toInt();
+      lora_data[20] = String(gps.time.substring(2, 4)).toInt();
+      lora_data[21] = String(gps.time.substring(4, 6)).toInt();
+      uint64_t hdo = *(uint64_t*)&gps.hdop;      lora_data[26] = (hdo >> 0) & 0x7f; lora_data[25] = (hdo >> 7) & 0x7f; lora_data[24] = (hdo >> 14) & 0x7f; lora_data[23] = (hdo >> 21) & 0x7f; lora_data[22] = (hdo >> 28) & 0x0f; //5 Bytes Hdop
       lora_data[27] = batt;
       this->lora->write(lora_data, 28);
       /// Logging

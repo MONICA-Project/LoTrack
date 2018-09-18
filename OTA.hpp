@@ -1,5 +1,6 @@
 #include <ArduinoOTA.h>
 
+template<const char* espname>
 class OTA {
 public:
   OTA(wlanclass* wlanclass, ledclass * ledclass) {
@@ -12,6 +13,7 @@ public:
     this->onEnd();
     this->onProgress();
     this->onError();
+    ArduinoOTA.setHostname(espname);
     ArduinoOTA.begin();
     this->wlan->box("OTA Successfull", 50);
   }

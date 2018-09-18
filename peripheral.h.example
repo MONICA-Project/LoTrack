@@ -1,92 +1,139 @@
 //////// V1 //////////////////////
-#include "projectstructs.h"
-
 namespace {
+  // ESP-Name
+  extern char const esp_name[] = "A";
+  // Wifi-Settings
   extern char const wifissid[] = "IoT";
   extern char const wifipsk[] = "";
-  extern char const esp_name[] = "ESP32Lora-Test";
+  extern int const telnet_clients = 2;
+  extern int const telnet_port = 23;
+  extern bool const print_over_serialport = false;
+  // LED-Settings
+  extern int const pin_led = 2;
+  // Display-Settings
+  extern bool const use_display = true;
+  extern int const pin_oled_sda = 4;
+  extern int const pin_oled_scl = 15;
+  extern int const pin_oled_pwr = 16;
+  // GPS-Settings
+  extern int const hardware_serial_id = 1;
+  extern int const pin_gps_tx = 22;
+  extern int const pin_gps_rx = 23;
+  extern bool const print_gps_on_serialport = true;
+  // Lora-Settings
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 27;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 18;
+  extern int const pin_lora_rst = 14;
+  extern int const pin_lora_di0 = 26;
+  extern long const lora_band = 868095000;
+  // Battery-Settings
+  extern bool const has_battery = false;
+  extern int const pin_batt = 35;
 }
-
-#include "RXTX.hpp"
-#include "OLED.hpp"
-typedef OLED<0x3c, 4, 15, 16, true> oledclass;
-#include "OTA.hpp"
-#include "GPS.hpp"
-typedef GPS<1, 22, 23, true> gpsclass;
-#include "WLAN.hpp"
-typedef WLAN<wifissid, wifipsk, esp_name, true> wlanclass;
-#include "LORA.hpp"
-typedef LORA<19, 27, 5, 18, 14, 26, 868100000, esp_name> loraclass;
-#include "LED.hpp"
-typedef LED<2> ledclass;
 
 //////////// V2 ////////////////////////
-#include "projectstructs.h"
-
 namespace {
+  // ESP-Name
+  extern char const esp_name[] = "A";
+  // Wifi-Settings
   extern char const wifissid[] = "IoT";
   extern char const wifipsk[] = "";
-  extern char const esp_name[] = "ESP32Lora-PS";
+  extern int const telnet_clients = 2;
+  extern int const telnet_port = 23;
+  extern bool const print_over_serialport = false;
+  // LED-Settings
+  extern int const pin_led = 2;
+  // Display-Settings
+  extern bool const use_display = true;
+  extern int const pin_oled_sda = 21;
+  extern int const pin_oled_scl = 22;
+  extern int const pin_oled_pwr = 16;
+  // GPS-Settings
+  extern int const hardware_serial_id = 1;
+  extern int const pin_gps_tx = 34;
+  extern int const pin_gps_rx = 35;
+  extern bool const print_gps_on_serialport = true;
+  // Lora-Settings
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 27;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 18;
+  extern int const pin_lora_rst = 14;
+  extern int const pin_lora_di0 = 26;
+  extern long const lora_band = 868095000;
+  // Battery-Settings
+  extern bool const has_battery = false;
+  extern int const pin_batt = 35;
 }
-
-#include "RXTX.hpp"
-#include "OLED.hpp"
-typedef OLED<0x3c, 21, 22, 16, true> oledclass;
-#include "OTA.hpp"
-#include "GPS.hpp"
-typedef GPS<1, 34, 35, true> gpsclass;
-#include "WLAN.hpp"
-typedef WLAN<wifissid, wifipsk, esp_name, true> wlanclass;
-#include "LORA.hpp"
-typedef LORA<19, 27, 5, 18, 14, 26, 868095000, esp_name, true> loraclass;
-#include "LED.hpp"
-typedef LED<2> ledclass;
-
 
 ////////////// V3 //////////////////////
-#include "projectstructs.h"
-
 namespace {
-  extern char const wifissid[] = "Blubb-IoT";
-  extern char const wifipsk[] = "iotisttoll";
+  // ESP-Name
   extern char const esp_name[] = "A";
+  // Wifi-Settings
+  extern char const wifissid[] = "IoT";
+  extern char const wifipsk[] = "";
+  extern int const telnet_clients = 2;
+  extern int const telnet_port = 23;
+  extern bool const print_over_serialport = true;
+  // LED-Settings
+  extern int const pin_led = 13;
+  // Display-Settings
+  extern bool const use_display = false;
+  extern int const pin_oled_sda = 21;
+  extern int const pin_oled_scl = 22;
+  extern int const pin_oled_pwr = 16;
+  // GPS-Settings
+  extern int const hardware_serial_id = 1;
+  extern int const pin_gps_tx = 27;
+  extern int const pin_gps_rx = 34;
+  extern bool const print_gps_on_serialport = true;
+  // Lora-Settings
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 18;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 21;
+  extern int const pin_lora_rst = 4;
+  extern int const pin_lora_di0 = 36;
+  extern long const lora_band = 868095000;
+  // Battery-Settings
+  extern bool const has_battery = true;
+  extern int const pin_batt = 35;
 }
-
-#include "RXTX.hpp"
-#include "LED.hpp"
-typedef LED<13> ledclass;
-#include "OLED.hpp"
-typedef OLED<0x3c, 21, 22, 16, false> oledclass;
-#include "WLAN.hpp"
-typedef WLAN<wifissid, wifipsk, esp_name, 2, 23, true> wlanclass;
-#include "OTA.hpp"
-#include "GPS.hpp"
-typedef GPS<1, 27, 34, false> gpsclass;
-#include "LORA.hpp"
-typedef LORA<19, 18, 5, 21, 4, 36, 868095000, esp_name> loraclass;
-#include "BATTERY.hpp"
-typedef Battery<35> battclass;
 
 ////////////// V3-Julian ///////////////////
-#include "projectstructs.h"
-
 namespace {
-  extern char const wifissid[] = "Blubb-IoT";
-  extern char const wifipsk[] = "iotisttoll";
-  extern char const esp_name[] = "G";
+  // ESP-Name
+  extern char const esp_name[] = "L";
+  // Wifi-Settings
+  extern char const wifissid[] = "IoT";
+  extern char const wifipsk[] = "";
+  extern int const telnet_clients = 2;
+  extern int const telnet_port = 23;
+  extern bool const print_over_serialport = true;
+  // LED-Settings
+  extern int const pin_led = 13;
+  // Display-Settings
+  extern bool const use_display = false;
+  extern int const pin_oled_sda = 21;
+  extern int const pin_oled_scl = 22;
+  extern int const pin_oled_pwr = 16;
+  // GPS-Settings
+  extern int const hardware_serial_id = 1;
+  extern int const pin_gps_tx = 39;
+  extern int const pin_gps_rx = 34;
+  extern bool const print_gps_on_serialport = false;
+  // Lora-Settings
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 18;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 4;
+  extern int const pin_lora_rst = 21;
+  extern int const pin_lora_di0 = 36;
+  extern long const lora_band = 868095000;
+  // Battery-Settings
+  extern bool const has_battery = true;
+  extern int const pin_batt = 35;
 }
-
-#include "RXTX.hpp"
-#include "LED.hpp"
-typedef LED<13> ledclass;
-#include "OLED.hpp"
-typedef OLED<0x3c, 21, 22, 16, false> oledclass;
-#include "WLAN.hpp"
-typedef WLAN<wifissid, wifipsk, esp_name, 2, 23, true> wlanclass;
-#include "OTA.hpp"
-#include "GPS.hpp"
-typedef GPS<1, 39, 34, false> gpsclass;
-#include "LORA.hpp"
-typedef LORA<19, 18, 5, 4, 21, 36, 868095000, esp_name> loraclass;
-#include "BATTERY.hpp"
-typedef Battery<35> battclass;

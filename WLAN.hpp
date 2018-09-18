@@ -109,12 +109,19 @@ class WLAN {
     void gps(gpsInfoField gpsInfo, float battery) {
       this->oled->gps(gpsInfo, battery);
       this->log(String("################################################\n"));
-      this->log(String("GNSS FIX: ") + String(gpsInfo.gnssFix) + String("\n"));
+      this->log(String("FIX: ") + String(gpsInfo.fix) + String("\n"));
+      this->log(String("FIX-Type: ") + String(gpsInfo.fixtype) + String("\n"));
       this->log(String("Satellites: ") + String(gpsInfo.Satellites) + String("\n"));
       this->log(String("Lat: ") + String(gpsInfo.latitude, 6) + String("\n"));
       this->log(String("Long: ") + String(gpsInfo.longitude, 6) + String("\n"));
-      this->log(String("HDOP: ") + String(gpsInfo.HDOP, 6) + String("\n"));
-      this->log(String("Fix Time: ") + String(gpsInfo.hour < 10 ? "0" : "") + String(gpsInfo.hour) + String(gpsInfo.minute < 10 ? "0" : "") + String(gpsInfo.minute) + String(gpsInfo.second < 10 ? "0" : "") + String(gpsInfo.second) + String("\n"));
+      this->log(String("HDOP: ") + String(gpsInfo.hdop, 2) + String("\n"));
+      this->log(String("VDOP: ") + String(gpsInfo.vdop, 2) + String("\n"));
+      this->log(String("PDOP: ") + String(gpsInfo.pdop, 2) + String("\n"));
+      this->log(String("Height: ") + String(gpsInfo.height, 1) + String("\n"));
+      this->log(String("Direction: ") + String(gpsInfo.direction, 2) + String("\n"));
+      this->log(String("Speed: ") + String(gpsInfo.speed, 2) + String("\n"));
+      this->log(String("Fix Time: ") + gpsInfo.time + String("\n"));
+      this->log(String("Fix Date: ") + String(gpsInfo.day) + "." + String(gpsInfo.month) + "." + String(gpsInfo.year) + String("\n"));
       this->log(String("Battery: ") + String(battery, 2) + String("\n"));
     }
     #pragma endregion
