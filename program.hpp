@@ -1,4 +1,20 @@
+#include "projectstructs.h"
 #include "peripheral.h"
+#include "RXTX.hpp"
+#include "LED.hpp"
+typedef LED<pin_led> ledclass;
+#include "OLED.hpp"
+typedef OLED<pin_oled_sda, pin_oled_scl, pin_oled_pwr, use_display> oledclass;
+#include "WLAN.hpp"
+typedef WLAN<wifissid, wifipsk, esp_name, telnet_clients, telnet_port, print_over_serialport> wlanclass;
+#include "OTA.hpp"
+typedef OTA<esp_name> otaclass;
+#include "GPS.hpp"
+typedef GPS<hardware_serial_id, pin_gps_tx, pin_gps_rx, print_gps_on_serialport> gpsclass;
+#include "LORA.hpp"
+typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_band, esp_name> loraclass;
+#include "BATTERY.hpp"
+typedef Battery<pin_batt, has_battery> battclass;
 #include <pthread.h>
 
 class Program {

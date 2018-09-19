@@ -47,17 +47,24 @@ private:
   String data_gsa;
   String data_vtg;
   String data_zda;
+  String data_rmc;
 
   void parse(uint8_t c) {
     if(c == '\n') {
       if(this->data.startsWith("$GNGGA")) {
         this->data_gga = this->data;
+      } else if(this->data.startsWith("$GPGGA")) {
+        this->data_gga = this->data;
       } else if(this->data.startsWith("$GPGSA")) {
         this->data_gsa = this->data;
       } else if(this->data.startsWith("$GNVTG")) {
         this->data_vtg = this->data;
+      } else if(this->data.startsWith("$GPVTG")) {
+        this->data_vtg = this->data;
       } else if(this->data.startsWith("$GNZDA")) {
         this->data_zda = this->data;
+      } else if(this->data.startsWith("$GPRMC")) {
+        this->data_rmc = this->data;
       } else if(this->data.startsWith("$GPTXT")) {
         this->parseGGA(this->data_gga);
         this->parseGSA(this->data_gsa);
@@ -67,7 +74,16 @@ private:
           this->gpsdata.latitude = 0;
           this->gpsdata.longitude = 0;
         }
-      } 
+      } else if(this->data.startsWith("$GPGLL")) {
+        this->parseGGA(this->data_gga);
+        this->parseGSA(this->data_gsa);
+        this->parseVTG(this->data_vtg);
+        this->parseRMC(this->data_rmc);
+        if(!this->gpsdata.fix) {
+          this->gpsdata.latitude = 0;
+          this->gpsdata.longitude = 0;
+        }
+      }
       this->data = String();
     } else {
       if(c != '\r' && c != 0xFF) {
@@ -228,6 +244,39 @@ private:
     }
   }
 
+  void parseRMC(String data) {
+    if(data.indexOf(',') != -1) { //RMC          Recommended Minimum sentence C
+      data = data.substring(data.indexOf(',') + 1);
+    }
+    if(data.indexOf(',') != -1) { //123519       Fix taken at 12:35:19 UTC
+      data = data.substring(data.indexOf(',') + 1);
+    }
+    if(data.indexOf(',') != -1) { //A            Status A=active or V=Void.
+      data = data.substring(data.indexOf(',') + 1);
+    }
+    if(data.indexOf(',') != -1) { //4807.038,N   Latitude 48 deg 07.038' N
+      data = data.substring(data.indexOf(',') + 1);
+    }
+    if(data.indexOf(',') != -1) { //4807.038,N   Latitude 48 deg 07.038' N
+      data = data.substring(data.indexOf(',') + 1);
+    }
+    if(data.indexOf(',') != -1) { //01131.000,E  Longitude 11 deg 31.000' E
+      data = data.substring(data.indexOf(',') + 1);
+    }
+    if(data.indexOf(',') != -1) { //01131.000,E  Longitude 11 deg 31.000' E
+      data = data.substring(data.indexOf(',') + 1);
+    }
+    if(data.indexOf(',') != -1) { //022.4        Speed over the ground in knots
+      data = data.substring(data.indexOf(',') + 1);
+    }
+    if(data.indexOf(',') != -1) { //084.4        Track angle in degrees True
+      data = data.substring(data.indexOf(',') + 1);
+    }
+    if(data.indexOf(',') != -1) { //230394       Date - 23rd of March 1994
+      this->parseDate(data.substring(0, data.indexOf(',')));
+    }
+  }
+
   void parseTime(String t) {
     if(t.length() > 6) {
       mtx.lock();
@@ -354,6 +403,16 @@ private:
     if(t.length() >= 1) {
       mtx.lock();
       this->gpsdata.year = t.toInt();
+      mtx.unlock();
+    }
+  }
+
+  void parseDate(String t) {
+    if(t.length() == 6) {
+      mtx.lock();
+      this->gpsdata.day = t.substring(0, 2).toInt();
+      this->gpsdata.month = t.substring(2, 4).toInt();
+      this->gpsdata.year = t.substring(4, 6).toInt() + 2000;
       mtx.unlock();
     }
   }
