@@ -16,15 +16,17 @@
 template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band, const char* espname>
 class LORA {
 public:
-  LORA(wlanclass* wlanclass) {
+  LORA(wlanclass* wlanclass, Storage * storage) {
     this->wlan = wlanclass;
+    this->storage = storage;
     this->lora = new LoRaClass();
     SPI.begin (pin_sck, pin_miso, pin_mosi, pin_ss);
     this->lora->setPins (pin_ss, pin_rst, pin_dio);
   }
+
   void begin() {
     this->wlan->box("Setup Lora!", 80);
-    if (!this->lora->begin (band)) {
+    if (!this->lora->begin (band + this->storage->readOffsetFreq())) {
       this->wlan->box("Lora Failed!", 90);
     } else {
       this->lora->setSignalBandwidth(62500);
@@ -37,6 +39,23 @@ public:
       this->_lora_enabled = true;
     }
   }
+
+  void debugmode() {
+    this->lora->setSignalBandwidth(1);
+  }
+
+  void setFreqOffset(int32_t o) {
+    this->lora->setFrequency(band + o);
+  }
+
+  void send() {
+    this->lora->idle();
+    this->lora->beginPacket();
+    this->lora->print("TEST TEST TEST");
+    this->lora->endPacket();
+    this->lora->sleep();
+  }
+
   void send(gpsInfoField gps, float batt, bool as_bytes = false) {
     this->lora->idle();
     this->lora->beginPacket();
@@ -85,5 +104,6 @@ public:
 private:
   wlanclass * wlan;
   LoRaClass * lora;
+  Storage * storage;
   bool _lora_enabled = false;
 };

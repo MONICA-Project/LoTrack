@@ -9,31 +9,43 @@ class WLAN {
       this->oled = disp;
     }
 
+    #pragma region Start and Stop
     void begin() {
       this->box("Setup Wifi!", 20);
       this->w = new WiFiClass();
       this->w->mode(WIFI_STA);
       this->w->setHostname(espname);
       this->w->begin(ssid, psk_key);
-      if (this->w->waitForConnectResult() != WL_CONNECTED) {
+      if(this->w->waitForConnectResult() != WL_CONNECTED) {
         this->box("Not connected to WiFi", 25);
         this->_wifi_connected = false;
-      }
-      else {
+      } else {
         this->box(String("Connected to wifi: ") + this->toString(this->w->localIP()), 25);
         this->_wifi_connected = true;
         this->server_connect();
       }
     }
 
-    void lock() {
+    void stop() {
+      if(this->_server_connected) {
+        this->s->stop();
+        this->_server_connected = false;
+      }
+      this->w->mode(WIFI_OFF);
+      this->_wifi_connected = false;
+      btStop();
+    }
+    #pragma endregion
+
+    /*void lock() {
       this->mtx.lock();
     }
 
     void unlock() {
       this->mtx.unlock();
-    }
+    }*/
 
+    #pragma region Telnet Server
     void server_clienthandle() {
       if(this->server_hasClient()) {
         uint8_t i;
@@ -58,19 +70,38 @@ class WLAN {
       }
     }
 
+    bool server_has_data() {
+      for(uint8_t i = 0; i < server_clients; i++) {
+        if(this->serverClients[i] && this->serverClients[i].connected()) {
+          if(this->serverClients[i].available()) {
+            while(this->serverClients[i].available()) {
+              uint8_t c = this->serverClients[i].read();
+              if(c == '\n') {
+                this->last_data = this->serverClientsData[i];
+                this->serverClientsData[i] = String();
+                return true;
+              } else {
+                if(c != '\r') {
+                  String cn = String(' ');
+                  cn.setCharAt(0, c);
+                  this->serverClientsData[i].concat(cn);
+                }
+              }
+            }
+          }
+        }
+      }
+      return false;
+    }
+
     uint8_t getNumClients() {
       return this->clients;
     }
 
-    void stop() {
-      if(this->_server_connected) {
-        this->s->stop();
-        this->_server_connected = false;
-      }
-      this->w->mode(WIFI_OFF);
-      this->_wifi_connected = false;
-      btStop();
+    String get_last_string() {
+      return this->last_data;
     }
+    #pragma endregion
 
     #pragma region Logger
     void log(String text) {
@@ -201,9 +232,11 @@ class WLAN {
     bool _server_connected = false;
     WiFiClient serverClients[server_clients];
     oledclass* oled;
-    std::mutex mtx;
-    uint8_t networks = 0;
+    //std::mutex mtx;
+    //uint8_t networks = 0;
     uint8_t clients = 0;
+    String serverClientsData[server_clients];
+    String last_data;
 
     bool server_connect() {
       if(this->_wifi_connected) {

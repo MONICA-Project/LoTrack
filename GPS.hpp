@@ -8,13 +8,21 @@ public:
     this->wlan = wlanclass;
     this->hs = new HardwareSerial(serial_pin);
   }
+
+  #pragma region Start Stop
   void begin() {
     this->wlan->box("Gps Setup!", 60);
     this->hs->begin(9600, SERIAL_8N1, pin_rx, pin_tx);
     this->wlan->box("Gps Successfull", 70);
   }
+
+  void stop() {
+    this->running = false;
+  }
+  #pragma endregion
+
   void measure() {
-    while (true) {
+    while (this->running) {
       pthread_mutex_lock(&this->mgp);
       char c = this->hs->read();
       this->parse(c);
@@ -48,7 +56,9 @@ private:
   String data_vtg;
   String data_zda;
   String data_rmc;
+  bool running = true;
 
+  #pragma region Parsing
   void parse(uint8_t c) {
     if(c == '\n') {
       if(this->data.startsWith("$GNGGA")) {
@@ -416,4 +426,5 @@ private:
       mtx.unlock();
     }
   }
+  #pragma endregion
 };
