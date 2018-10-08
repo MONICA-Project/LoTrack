@@ -43,7 +43,7 @@ public:
     pthread_mutex_init(&this->gps->mgp, NULL);
     this->create_gps_thread();
     this->create_wlansniffer_thread();
-    this->create_lora_thread();
+    this->create_disp_thread();
     this->wlan->box("Init Ok!", 100);
     this->led->off();
   }
@@ -51,7 +51,10 @@ public:
   void loop() {
     if(this->loop_thread) {
       pthread_mutex_lock(&this->mutex_display);
-      this->wlan->gps(this->gps->getGPSData(), this->batt->getBattery());
+      pthread_mutex_lock(&this->gps->mgp);
+      this->lora->send(this->gps->getGPSData(), this->batt->getBattery(), false);
+      this->led->blink();
+      pthread_mutex_unlock(&this->gps->mgp);
       pthread_mutex_unlock(&this->mutex_display);
     } else {
       if(!this->loop_thread_stopped) {
@@ -59,7 +62,7 @@ public:
         this->loop_thread_stopped = true;
       }
     }
-    delay(5000);
+    delay(20000);
   }
 
   static void *gps_runner(void *obj_class) {
@@ -83,9 +86,9 @@ public:
         if(command.equals("FREQ")) {
           p->wlan->log("Stopping all other Threads!\n");
           p->gps->stop();
-          p->lora_thread = false;
+          p->disp_thread = false;
           p->loop_thread = false;
-          while(!p->lora_thread_stopped || !p->loop_thread_stopped || !p->gps_thread_stopped) {
+          while(!p->disp_thread_stopped || !p->loop_thread_stopped || !p->gps_thread_stopped) {
             delay(1000);
           }
           int32_t freq = p->storage->readOffsetFreq();
@@ -132,20 +135,17 @@ public:
     }
   }
 
-  static void *lora_runner(void *obj_class) {
+  static void *disp_runner(void *obj_class) {
     Program *p = ((Program *)obj_class);
-    p->wlan->log("LORA Thread started!\n");
-    while (p->lora_thread) {
+    p->wlan->log("DISP Thread started!\n");
+    while (p->disp_thread) {
       pthread_mutex_lock(&p->mutex_display);
-      pthread_mutex_lock(&p->gps->mgp);
-      p->lora->send(p->gps->getGPSData(), p->batt->getBattery(), false);
-      p->led->blink();
-      pthread_mutex_unlock(&p->gps->mgp);
+      p->wlan->gps(p->gps->getGPSData(), p->batt->getBattery());
       pthread_mutex_unlock(&p->mutex_display);
-      delay(20000);
+      delay(5000);
     }
-    p->wlan->log("LORA Thread stopped!\n");
-    p->lora_thread_stopped = true;
+    p->wlan->log("DISP Thread stopped!\n");
+    p->disp_thread_stopped = true;
   }
 
 private:
@@ -158,9 +158,9 @@ private:
   battclass * batt;
   Storage * storage;
   pthread_mutex_t mutex_display;
-  bool lora_thread = true;
+  bool disp_thread = true;
   bool loop_thread = true;
-  bool lora_thread_stopped = false;
+  bool disp_thread_stopped = false;
   bool loop_thread_stopped = false;
   bool gps_thread_stopped = false;
   
@@ -168,7 +168,7 @@ private:
     pthread_t thread;
     int return_value = pthread_create(&thread, NULL, &this->gps_runner, this);
     if (return_value) {
-      this->wlan->log(String("Failed to Start GPS-Runner!\n"));
+      this->wlan->log(String("Failed to Start GPS-Thread!\n"));
     }
   }
 
@@ -176,15 +176,15 @@ private:
     pthread_t thread;
     int return_value = pthread_create(&thread, NULL, &this->wlan_runner, this);
     if (return_value) {
-      this->wlan->log(String("Failed to Start WLAN-Runner!\n"));
+      this->wlan->log(String("Failed to Start WLAN-Thread!\n"));
     }
   }
 
-  void create_lora_thread() {
+  void create_disp_thread() {
     pthread_t thread;
-    int return_value = pthread_create(&thread, NULL, &this->lora_runner, this);
+    int return_value = pthread_create(&thread, NULL, &this->disp_runner, this);
     if (return_value) {
-      this->wlan->log(String("Failed to Start LORA-Runner!\n"));
+      this->wlan->log(String("Failed to Start DISP-Thread!\n"));
     }
   }
 };
