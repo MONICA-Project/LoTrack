@@ -5,15 +5,15 @@ public:
   LED() {
     pinMode(pin_led, OUTPUT);
   }
-  void blink() {
-    this->on(); 
+  void Blink() {
+    this->On(); 
     delay (10);
-    this->off();
+    this->Off();
   }
-  void on() {
+  void On() {
     digitalWrite(pin_led, HIGH); // turn the LED on (HIGH is the voltage level)
   }
-  void off() {
+  void Off() {
     digitalWrite(pin_led, LOW); // turn the LED off by making the voltage LOW
   }
 };

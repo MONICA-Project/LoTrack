@@ -5,13 +5,13 @@ class Storage {
     Storage() {
       this->preferences = new Preferences();
     }
-    void begin() {
+    void Begin() {
       this->preferences->begin("finetune", false);
     }
-    int32_t readOffsetFreq() {
+    int32_t ReadOffsetFreq() {
       return this->preferences->getLong("finetune");
     }
-    void writeOffsetFreq(int32_t o) {
+    void WriteOffsetFreq(int32_t o) {
       this->preferences->putLong("finetune", o);
     }
   private:

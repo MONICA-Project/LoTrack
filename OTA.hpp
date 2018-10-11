@@ -7,17 +7,17 @@ public:
     this->wlan = wlanclass;
     this->led = ledclass;
   }
-  void setup() {
-    this->wlan->box("OTA Setup!", 40);
-    this->onStart();
-    this->onEnd();
-    this->onProgress();
-    this->onError();
+  void Begin() {
+    this->wlan->Box("OTA Setup!", 40);
+    this->OnStart();
+    this->OnEnd();
+    this->OnProgress();
+    this->OnError();
     ArduinoOTA.setHostname(espname);
     ArduinoOTA.begin();
-    this->wlan->box("OTA Successfull", 50);
+    this->wlan->Box("OTA Successfull", 50);
   }
-  void onStart() {
+  void OnStart() {
     ArduinoOTA.onStart([this]() {
       String type;
       if (ArduinoOTA.getCommand() == U_FLASH)
@@ -25,56 +25,56 @@ public:
       else // U_SPIFFS
         type = "filesystem";
       // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-      this->wlan->clear();
-      this->wlan->drawString(0, 0, "Start updating:" + type);
-      this->wlan->display();
+      this->wlan->Clear();
+      this->wlan->DrawString(0, 0, "Start updating:" + type);
+      this->wlan->Display();
     });
   }
-  void onEnd() {
+  void OnEnd() {
     ArduinoOTA.onEnd([this]() {
-      this->wlan->drawString(0, 40, "End");
-      this->wlan->display();
+      this->wlan->DrawString(0, 40, "End");
+      this->wlan->Display();
     });
   }
-  void onProgress() {
+  void OnProgress() {
     ArduinoOTA.onProgress([this](unsigned int progress, unsigned int total) {
       uint8_t p = progress / (total / 100);
       if(p % 2) {
-        led->on();
+        led->On();
       } else {
-        led->off();
+        led->Off();
       }
-      this->wlan->log(String(p) + String(" "));
-      this->wlan->box(String("Progess update..."), p);
+      this->wlan->Log(String(p) + String(" "));
+      this->wlan->Box(String("Progess update..."), p);
     });
   }
-  void onError() {
+  void OnError() {
     ArduinoOTA.onError([this](ota_error_t error) {
-      this->wlan->drawString(0, 40, "Error: ");
-      this->wlan->display();
+      this->wlan->DrawString(0, 40, "Error: ");
+      this->wlan->Display();
       if (error == OTA_AUTH_ERROR) {
-        this->wlan->drawString(60, 40, "Auth Failed");
-        this->wlan->display();
+        this->wlan->DrawString(60, 40, "Auth Failed");
+        this->wlan->Display();
       }
       else if (error == OTA_BEGIN_ERROR) {
-        this->wlan->drawString(60, 40, "Begin Failed");
-        this->wlan->display();
+        this->wlan->DrawString(60, 40, "Begin Failed");
+        this->wlan->Display();
       }
       else if (error == OTA_CONNECT_ERROR) {
-        this->wlan->drawString(60, 40, "Connect Failed");
-        this->wlan->display();
+        this->wlan->DrawString(60, 40, "Connect Failed");
+        this->wlan->Display();
       }
       else if (error == OTA_RECEIVE_ERROR) {
-        this->wlan->drawString(60, 40, "Receive Failed");
-        this->wlan->display();
+        this->wlan->DrawString(60, 40, "Receive Failed");
+        this->wlan->Display();
       }
       else if (error == OTA_END_ERROR) {
-        this->wlan->drawString(60, 40, "End Failed");
-        this->wlan->display();
+        this->wlan->DrawString(60, 40, "End Failed");
+        this->wlan->Display();
       }
     });
   }
-  void check() {
+  void Check() {
     ArduinoOTA.handle();
   }
 private:

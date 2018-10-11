@@ -2,9 +2,9 @@
 Program p;
 
 void setup () {
-  p.setup();
+  p.Begin();
 }
 
 void loop () {
-  p.loop();
+  p.Loop();
 }

@@ -10,23 +10,23 @@ class WLAN {
     }
 
     #pragma region Start and Stop
-    void begin() {
-      this->box("Setup Wifi!", 20);
+    void Begin() {
+      this->Box("Setup Wifi!", 20);
       this->w = new WiFiClass();
       this->w->mode(WIFI_STA);
       this->w->setHostname(espname);
       this->w->begin(ssid, psk_key);
       if(this->w->waitForConnectResult() != WL_CONNECTED) {
-        this->box("Not connected to WiFi", 25);
+        this->Box("Not connected to WiFi", 25);
         this->_wifi_connected = false;
       } else {
-        this->box(String("Connected to wifi: ") + this->toString(this->w->localIP()), 25);
+        this->Box(String("Connected to wifi: ") + this->GetIp(), 25);
         this->_wifi_connected = true;
-        this->server_connect();
+        this->ServerConnect();
       }
     }
 
-    void stop() {
+    void Stop() {
       if(this->_server_connected) {
         this->s->stop();
         this->_server_connected = false;
@@ -37,9 +37,23 @@ class WLAN {
     }
     #pragma endregion
 
+    #pragma region Public Attributes
+    String GetIp() {
+      return this->ToString(this->w->localIP());
+    }
+
+    String GetSsid() {
+      return String(ssid);
+    }
+
+    bool GetStatus() {
+      return this->_wifi_connected;
+    }
+    #pragma endregion
+
     #pragma region Telnet Server
-    void server_clienthandle() {
-      if(this->server_hasClient()) {
+    void ServerClienthandle() {
+      if(this->ServerHasClient()) {
         uint8_t i;
         for(i = 0; i < server_clients; i++) {
           if(!this->serverClients[i] || !this->serverClients[i].connected()) {
@@ -49,7 +63,7 @@ class WLAN {
             this->serverClients[i] = this->s->available();
             this->clients++;
             this->serverClients[i].print(String("Hello on the Telnet of ") + String(espname) + String("\r\n"));
-            this->log(String("New Client: ") + String(i) + String("\n"));
+            this->Log(String("New Client: ") + String(i) + String("\n"));
             break;
           }
         }
@@ -57,12 +71,12 @@ class WLAN {
           WiFiClient cl = this->s->available();
           cl.print(String("Hello on the Telnet of ") + String(espname) + String("\r\nYou will be kicked\r\n"));
           cl.stop();
-          this->log("Connection rejected\n");
+          this->Log("Connection rejected\n");
         }
       }
     }
 
-    bool server_has_data() {
+    bool ServerHasData() {
       for(uint8_t i = 0; i < server_clients; i++) {
         if(this->serverClients[i] && this->serverClients[i].connected()) {
           if(this->serverClients[i].available()) {
@@ -86,17 +100,17 @@ class WLAN {
       return false;
     }
 
-    uint8_t getNumClients() {
+    uint8_t GetNumClients() {
       return this->clients;
     }
 
-    String get_last_string() {
+    String GetLastString() {
       return this->last_data;
     }
     #pragma endregion
 
     #pragma region Logger
-    void log(String text) {
+    void Log(String text) {
       if(debug) {
         Serial.print(text);
       }
@@ -109,43 +123,50 @@ class WLAN {
         }
       }
     }
-    String toString(IPAddress a) {
+
+    String ToString(IPAddress a) {
       return String(a[0]) + "." + String(a[1]) + "." + String(a[2]) + "." + String(a[3]);
     }
-    void log(const char text) {
-      this->log(String(text));
+
+    void Log(const char text) {
+      this->Log(String(text));
     }
-    void box(String text, uint8_t percent) {
+
+    void Box(String text, uint8_t percent) {
       this->oled->box(text, percent);
-      this->log(text + String("\n"));
+      this->Log(text + String("\n"));
     }
-    void clear() {
+
+    void Clear() {
       this->oled->clear();
     }
-    void drawString(int16_t x, int16_t y, String text) {
+
+    void DrawString(int16_t x, int16_t y, String text) {
       this->oled->drawString(x, y, text);
-      this->log(text + String("\n"));
+      this->Log(text + String("\n"));
     }
-    void display() {
+
+    void Display() {
       this->oled->display();
     }
-    void gps(gpsInfoField gpsInfo, float battery) {
+
+    void Gps(gpsInfoField gpsInfo, float battery) {
       this->oled->gps(gpsInfo, battery);
-      this->log(String("################################################\n"));
-      this->log(String("FIX: ") + String(gpsInfo.fix) + String("\n"));
-      this->log(String("FIX-Type: ") + String(gpsInfo.fixtype) + String("\n"));
-      this->log(String("Satellites: ") + String(gpsInfo.Satellites) + String("\n"));
-      this->log(String("Lat: ") + String(gpsInfo.latitude, 6) + String("\n"));
-      this->log(String("Long: ") + String(gpsInfo.longitude, 6) + String("\n"));
-      this->log(String("HDOP: ") + String(gpsInfo.hdop, 2) + String("\n"));
-      this->log(String("VDOP: ") + String(gpsInfo.vdop, 2) + String("\n"));
-      this->log(String("PDOP: ") + String(gpsInfo.pdop, 2) + String("\n"));
-      this->log(String("Height: ") + String(gpsInfo.height, 1) + String("\n"));
-      this->log(String("Direction: ") + String(gpsInfo.direction, 2) + String("\n"));
-      this->log(String("Speed: ") + String(gpsInfo.speed, 2) + String("\n"));
-      this->log(String("Fix Time: ") + gpsInfo.time + String("\n"));
-      this->log(String("Fix Date: ") + String(gpsInfo.day) + "." + String(gpsInfo.month) + "." + String(gpsInfo.year) + String("\n"));
-      this->log(String("Battery: ") + String(battery, 2) + String("\n"));
+      this->Log(String("################################################\n"));
+      this->Log(String("FIX: ") + String(gpsInfo.fix) + String("\n"));
+      this->Log(String("FIX-Type: ") + String(gpsInfo.fixtype) + String("\n"));
+      this->Log(String("Satellites: ") + String(gpsInfo.Satellites) + String("\n"));
+      this->Log(String("Lat: ") + String(gpsInfo.latitude, 6) + String("\n"));
+      this->Log(String("Long: ") + String(gpsInfo.longitude, 6) + String("\n"));
+      this->Log(String("HDOP: ") + String(gpsInfo.hdop, 2) + String("\n"));
+      this->Log(String("VDOP: ") + String(gpsInfo.vdop, 2) + String("\n"));
+      this->Log(String("PDOP: ") + String(gpsInfo.pdop, 2) + String("\n"));
+      this->Log(String("Height: ") + String(gpsInfo.height, 1) + String("\n"));
+      this->Log(String("Direction: ") + String(gpsInfo.direction, 2) + String("\n"));
+      this->Log(String("Speed: ") + String(gpsInfo.speed, 2) + String("\n"));
+      this->Log(String("Fix Time: ") + gpsInfo.time + String("\n"));
+      this->Log(String("Fix Date: ") + String(gpsInfo.day) + "." + String(gpsInfo.month) + "." + String(gpsInfo.year) + String("\n"));
+      this->Log(String("Battery: ") + String(battery, 2) + String("\n"));
     }
     #pragma endregion
 
@@ -160,9 +181,9 @@ class WLAN {
     String serverClientsData[server_clients];
     String last_data;
 
-    bool server_connect() {
+    bool ServerConnect() {
       if(this->_wifi_connected) {
-        this->box(String("Open server on port: ") + String(server_port), 30);
+        this->Box(String("Open server on port: ") + String(server_port), 30);
         this->s = new WiFiServer(server_port);
         this->s->begin();
         this->s->setNoDelay(true);
@@ -171,7 +192,7 @@ class WLAN {
       return false;
     }
 
-    bool server_hasClient() {
+    bool ServerHasClient() {
       if(this->_server_connected) {
         return this->s->hasClient();
       }

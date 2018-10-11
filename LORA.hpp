@@ -24,10 +24,10 @@ public:
     this->lora->setPins (pin_ss, pin_rst, pin_dio);
   }
 
-  void begin() {
-    this->wlan->box("Setup Lora!", 80);
-    if (!this->lora->begin (band + this->storage->readOffsetFreq())) {
-      this->wlan->box("Lora Failed!", 90);
+  void Begin() {
+    this->wlan->Box("Setup Lora!", 80);
+    if (!this->lora->begin (band + this->storage->ReadOffsetFreq())) {
+      this->wlan->Box("Lora Failed!", 90);
     } else {
       this->lora->setSignalBandwidth(62500);
       this->lora->setSpreadingFactor(8);
@@ -35,20 +35,20 @@ public:
       this->lora->setTxPower(17);
       this->lora->enableCrc();
       //this->lora->disableCrc();
-      this->wlan->box("Lora successful", 90);
+      this->wlan->Box("Lora successful", 90);
       this->_lora_enabled = true;
     }
   }
 
-  void debugmode() {
+  void Debugmode() {
     this->lora->setSignalBandwidth(1);
   }
 
-  void setFreqOffset(int32_t o) {
+  void SetFreqOffset(int32_t o) {
     this->lora->setFrequency(band + o);
   }
-
-  void send() {
+  #pragma region Send Data
+  void Send() {
     this->lora->idle();
     this->lora->beginPacket();
     this->lora->print("TEST TEST TEST");
@@ -56,33 +56,31 @@ public:
     this->lora->sleep();
   }
 
-  void send(gpsInfoField gps, float batt, bool as_bytes = false) {
+  void Send(gpsInfoField gps, float batt, bool as_bytes = false) {
     this->lora->idle();
     this->lora->beginPacket();
-    if (!as_bytes) {
+    if(!as_bytes) {
       this->lora->println(espname);
       //Gps 18+7+9+1 = 35 Char
       this->lora->print(String(gps.latitude, 6) + "," + String(gps.longitude, 6) + ","); //8+1+8+1 = 18 Char
       this->lora->print(gps.time + ","); //7 Char
-      this->lora->print(String(gps.hdop, 2) + "," + String(batt,2)); //4+1+2+1+1 = 9 Char + LN (1 Char)
-      /// Logging
-      this->wlan->log(String("################################################\n"));
-      this->wlan->log(String(espname) + String("\n"));
-      String g = String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(batt,2);
-      this->wlan->log(g + String("\n"));
-    }
-    else {
+      this->lora->print(String(gps.hdop, 2) + "," + String(batt, 2)); //4+1+2+1+1 = 9 Char + LN (1 Char)
+                                                                      /// Logging
+      this->wlan->Log(String("################################################\n"));
+      this->wlan->Log(String(espname) + String("\n"));
+      String g = String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(batt, 2);
+      this->wlan->Log(g + String("\n"));
+    } else {
       uint8_t lora_data[28];
       lora_data[0] = 'b';
-      for (uint8_t i = 0; i < 8; i++) {
-        if (strlen(espname) > i) {
-          lora_data[i+1] = esp_name[i];
-        }
-        else {
-          lora_data[i+1] = 0;
+      for(uint8_t i = 0; i < 8; i++) {
+        if(strlen(espname) > i) {
+          lora_data[i + 1] = esp_name[i];
+        } else {
+          lora_data[i + 1] = 0;
         }
       }
-      uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[13] = (lat >> 0) & 0x7f; lora_data[12] = (lat >> 7) & 0x7f; lora_data[11] = (lat >> 14) & 0x7f; lora_data[10] = (lat >> 21) & 0x7f; lora_data[9] =  (lat >> 28) & 0x0f; //5 Bytes Lat
+      uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[13] = (lat >> 0) & 0x7f; lora_data[12] = (lat >> 7) & 0x7f; lora_data[11] = (lat >> 14) & 0x7f; lora_data[10] = (lat >> 21) & 0x7f; lora_data[9] = (lat >> 28) & 0x0f; //5 Bytes Lat
       uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[18] = (lon >> 0) & 0x7f; lora_data[17] = (lon >> 7) & 0x7f; lora_data[16] = (lon >> 14) & 0x7f; lora_data[15] = (lon >> 21) & 0x7f; lora_data[14] = (lon >> 28) & 0x0f; //5 Bytes Lon
       lora_data[19] = String(gps.time.substring(0, 2)).toInt();
       lora_data[20] = String(gps.time.substring(2, 4)).toInt();
@@ -91,16 +89,28 @@ public:
       lora_data[27] = batt;
       this->lora->write(lora_data, 28);
       /// Logging
-      this->wlan->log(String("################################################\n"));
+      this->wlan->Log(String("################################################\n"));
       String g;
       for(uint8_t i = 0; i < 28; i++) {
         g = g + String(lora_data[i], HEX) + String(" ");
       }
-      this->wlan->log(g + String("\n"));
+      this->wlan->Log(g + String("\n"));
     }
     this->lora->endPacket();
     this->lora->sleep();
   }
+
+  void Send(uint8_t version, String ip, String ssid, bool wififlag, float battery, int32_t freqoffset) {
+    this->lora->idle();
+    this->lora->beginPacket();
+    this->lora->println("deb");
+    this->lora->println(espname);
+    this->lora->print(String(version)+","+ip+","+ssid+","+(wififlag?"t":"f")+","+String(battery,2)+","+String(freqoffset));
+    this->lora->endPacket();
+    this->lora->sleep();
+  }
+  #pragma endregion
+
 private:
   wlanclass * wlan;
   LoRaClass * lora;
