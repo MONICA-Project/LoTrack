@@ -3,6 +3,7 @@
 #include "RXTX.hpp"
 #include "LED.hpp"
 #include "STORAGE.hpp"
+#include "SLEEP.hpp"
 typedef LED<pin_led> ledclass;
 #include "OLED.hpp"
 typedef OLED<pin_oled_sda, pin_oled_scl, pin_oled_pwr, use_display> oledclass;
@@ -24,6 +25,7 @@ public:
     this->s = new RXTX();
     this->led = new ledclass();
     this->batt = new battclass();
+    this->sleep = new Sleep();
     this->wlan = new wlanclass(new oledclass());
     this->aOTA = new otaclass(this->wlan, this->led);
     this->gps = new gpsclass(this->wlan);
@@ -33,20 +35,35 @@ public:
 
   void Begin() {
     this->led->On();
+    this->sleep->Begin();
+    uint8_t sleepReason = this->sleep->GetWakeupReason();
     this->wlan->Begin();
-    this->aOTA->Begin();
+    if(sleepReason == 0) {
+      this->wlan->Connect();
+      this->aOTA->Begin();
+    } else {
+      this->wlan->Stop();
+    }
     this->gps->Begin();
     this->storage->Begin();
     this->lora->Begin();
-    this->wlan->Box("Create Threads!", 95);
+    if(sleepReason == 0) {
+      this->wlan->Box("Create Threads!", 95);
+    }
     pthread_mutex_init(&this->mutex_display, NULL);
-    pthread_mutex_init(&this->gps->mgp, NULL);
     this->CreateGpsThread();
-    this->CreateWlanThread();
-    this->CreateDispThread();
-    this->wlan->Box("Init Ok!", 100);
+    if(sleepReason == 0) {
+      this->CreateWlanThread();
+      this->CreateDispThread();
+      this->wlan->Box("Init Ok!", 100);
+    }
     this->led->Off();
-    this->send_startup_infos = true;
+    if(sleepReason == 0) {
+      this->send_startup_infos = true;
+    } else {
+      this->send_startup_infos = false;
+      this->sleep->EnableSleep();
+    }
   }
 
   void Loop() {
@@ -55,11 +72,14 @@ public:
       this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq());
     }
     if(this->loop_thread) {
+      while(!this->gps->HasData()) {
+        delay(100);
+      }
       pthread_mutex_lock(&this->mutex_display);
-      pthread_mutex_lock(&this->gps->mgp);
+      pthread_mutex_lock(&this->gps->MutexGps);
       this->lora->Send(this->gps->GetGPSData(), this->batt->GetBattery(), false);
       this->led->Blink();
-      pthread_mutex_unlock(&this->gps->mgp);
+      pthread_mutex_unlock(&this->gps->MutexGps);
       pthread_mutex_unlock(&this->mutex_display);
     } else {
       if(!this->loop_thread_stopped) {
@@ -67,7 +87,7 @@ public:
         this->loop_thread_stopped = true;
       }
     }
-    delay(20000);
+    this->sleep->TimerSleep();
   }
 
   static void *GpsRunner(void *obj_class) {
@@ -133,6 +153,7 @@ public:
           p->wlan->Stop();
           p->disp_thread = false;
           p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->ReadOffsetFreq());
+          p->sleep->EnableSleep();
         }
         count = 0;
       } else {
@@ -156,7 +177,7 @@ public:
   }
 
 private:
-  const uint8_t version = 1;
+  const uint8_t version = 2;
   RXTX * s;
   otaclass * aOTA;
   gpsclass * gps;
@@ -165,6 +186,7 @@ private:
   ledclass * led;
   battclass * batt;
   Storage * storage;
+  Sleep * sleep;
   pthread_mutex_t mutex_display;
   bool disp_thread = true;
   bool loop_thread = true;

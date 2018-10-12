@@ -13,6 +13,7 @@ public:
   void Begin() {
     this->wlan->Box("Gps Setup!", 60);
     this->hs->begin(9600, SERIAL_8N1, pin_rx, pin_tx);
+    pthread_mutex_init(&this->MutexGps, NULL);
     this->wlan->Box("Gps Successfull", 70);
   }
 
@@ -23,7 +24,7 @@ public:
 
   void Measure() {
     while (this->running) {
-      pthread_mutex_lock(&this->mgp);
+      pthread_mutex_lock(&this->MutexGps);
       char c = this->hs->read();
       this->Parse(c);
       if (debug) {
@@ -34,17 +35,23 @@ public:
           this->hs->write(Serial.read());
         }
       }
-      pthread_mutex_unlock(&this->mgp);
+      pthread_mutex_unlock(&this->MutexGps);
       delay(1);
     }
   }
+
+  bool HasData() {
+    return this->hasData;
+  }
+
   gpsInfoField GetGPSData() {
     mtx.lock();
     gpsInfoField g = this->gpsdata;
     mtx.unlock();
     return g;
   }
-  pthread_mutex_t mgp;
+
+  pthread_mutex_t MutexGps;
 private:
   HardwareSerial * hs;
   wlanclass * wlan;
@@ -57,6 +64,7 @@ private:
   String data_zda;
   String data_rmc;
   bool running = true;
+  bool hasData = false;
 
   #pragma region Parsing
   void Parse(uint8_t c) {
@@ -84,6 +92,9 @@ private:
           this->gpsdata.latitude = 0;
           this->gpsdata.longitude = 0;
         }
+        if(!this->data_gga.equals("") && !this->data_gsa.equals("") && !this->data_vtg.equals("") && !this->data_zda.equals("")) {
+          this->hasData = true;
+        }
       } else if(this->data.startsWith("$GPGLL")) {
         this->ParseGGA(this->data_gga);
         this->ParseGSA(this->data_gsa);
@@ -92,6 +103,9 @@ private:
         if(!this->gpsdata.fix) {
           this->gpsdata.latitude = 0;
           this->gpsdata.longitude = 0;
+        }
+        if(!this->data_gga.equals("") && !this->data_gsa.equals("") && !this->data_vtg.equals("") && !this->data_rmc.equals("")) {
+          this->hasData = true;
         }
       }
       this->data = String();

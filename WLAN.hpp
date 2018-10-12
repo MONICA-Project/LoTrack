@@ -11,8 +11,11 @@ class WLAN {
 
     #pragma region Start and Stop
     void Begin() {
-      this->Box("Setup Wifi!", 20);
       this->w = new WiFiClass();
+    }
+
+    void Connect() {
+      this->Box("Setup Wifi!", 20);
       this->w->mode(WIFI_STA);
       this->w->setHostname(espname);
       this->w->begin(ssid, psk_key);
