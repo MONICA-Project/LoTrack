@@ -177,7 +177,7 @@ public:
   }
 
 private:
-  const uint8_t version = 2;
+  const uint8_t version = 3;
   RXTX * s;
   otaclass * aOTA;
   gpsclass * gps;

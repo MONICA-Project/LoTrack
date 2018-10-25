@@ -59,18 +59,15 @@ public:
   void Send(gpsInfoField gps, float batt, bool as_bytes = false) {
     this->lora->idle();
     this->lora->beginPacket();
-    if(!as_bytes) {
+    //if(!as_bytes) {
+      String g = String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2); //Gps 9+9+7+5+4 = 34 Char
       this->lora->println(espname);
-      //Gps 18+7+9+1 = 35 Char
-      this->lora->print(String(gps.latitude, 6) + "," + String(gps.longitude, 6) + ","); //8+1+8+1 = 18 Char
-      this->lora->print(gps.time + ","); //7 Char
-      this->lora->print(String(gps.hdop, 2) + "," + String(batt, 2)); //4+1+2+1+1 = 9 Char + LN (1 Char)
-                                                                      /// Logging
+      this->lora->print(g);
+      /// Logging
       this->wlan->Log(String("################################################\n"));
       this->wlan->Log(String(espname) + String("\n"));
-      String g = String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(batt, 2);
       this->wlan->Log(g + String("\n"));
-    } else {
+    /*} else {
       uint8_t lora_data[28];
       lora_data[0] = 'b';
       for(uint8_t i = 0; i < 8; i++) {
@@ -95,7 +92,7 @@ public:
         g = g + String(lora_data[i], HEX) + String(" ");
       }
       this->wlan->Log(g + String("\n"));
-    }
+    }*/
     this->lora->endPacket();
     this->lora->sleep();
   }
