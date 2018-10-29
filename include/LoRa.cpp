@@ -46,6 +46,7 @@
 #define MODE_TX                  0x03
 #define MODE_RX_CONTINUOUS       0x05
 #define MODE_RX_SINGLE           0x06
+#define MODE_CAD				 0x07
 
 // PA config
 #define PA_BOOST                 0x80
@@ -54,6 +55,8 @@
 #define IRQ_TX_DONE_MASK           0x08
 #define IRQ_PAYLOAD_CRC_ERROR_MASK 0x20
 #define IRQ_RX_DONE_MASK           0x40
+#define IRQ_CAD_DONE_MASK		   0x04
+#define IRQ_CAD_DETECTED_MASK	   0x01
 
 #define MAX_PKT_LENGTH           255
 
@@ -374,6 +377,17 @@ void LoRaClass::receive(int size)
   writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_RX_CONTINUOUS);
 }
 #endif
+
+bool LoRaClass::hasChannelActivity() {
+  writeRegister(REG_OP_MODE, MODE_LONG_RANGE_MODE | MODE_CAD);
+	while ((readRegister(REG_IRQ_FLAGS) & IRQ_CAD_DONE_MASK) == 0 && (readRegister(REG_IRQ_FLAGS) & IRQ_CAD_DETECTED_MASK) == 0) {
+      yield();
+    }
+    bool activity = (readRegister(REG_IRQ_FLAGS) & IRQ_CAD_DETECTED_MASK) == 0;
+    writeRegister(REG_IRQ_FLAGS, IRQ_CAD_DONE_MASK);
+	writeRegister(REG_IRQ_FLAGS, IRQ_CAD_DETECTED_MASK);
+	return activity;
+}
 
 void LoRaClass::idle()
 {

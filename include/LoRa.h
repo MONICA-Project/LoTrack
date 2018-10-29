@@ -68,6 +68,7 @@ public:
   void disableCrc();
   void enableInvertIQ();
   void disableInvertIQ();
+  bool hasChannelActivity();
   
   void setOCP(uint8_t mA); // Over Current Protection control
 
