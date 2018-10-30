@@ -383,10 +383,13 @@ bool LoRaClass::hasChannelActivity() {
   while ((readRegister(REG_IRQ_FLAGS) & IRQ_CAD_DONE_MASK) == 0) {
     yield();
   }
-  bool activity = (readRegister(REG_IRQ_FLAGS) & IRQ_CAD_DETECTED_MASK) != 0;
   writeRegister(REG_IRQ_FLAGS, IRQ_CAD_DONE_MASK);
-  writeRegister(REG_IRQ_FLAGS, IRQ_CAD_DETECTED_MASK);
-  return activity;
+  bool act = false;
+  if((readRegister(REG_IRQ_FLAGS) & IRQ_CAD_DETECTED_MASK) == 1) {
+    act = true;
+    writeRegister(REG_IRQ_FLAGS, IRQ_CAD_DETECTED_MASK);
+  }
+  return act;
 }
 
 void LoRaClass::idle()

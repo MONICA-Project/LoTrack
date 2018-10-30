@@ -59,34 +59,26 @@ public:
   #pragma endregion
 
   #pragma region Send Data
-
   void Send(String data) {
     long startWait = millis();
-	while(this->lora->hasChannelActivity()) {
-		delay(1);
-	}
-	long endWait = millis();
-	this->lora->idle();
+    while(this->lora->hasChannelActivity()) {
+      delay(1);
+    }
+    long endWait = millis();
+    this->lora->idle();
     this->lora->beginPacket();
-	this->lora->print(data);
-	this->lora->endPacket();
+    this->lora->print(data);
+    this->lora->endPacket();
     this->lora->sleep();
-	this->wlan->Log(String("################################################\n"));
-	this->wlan->Log(String("Waiting: ") + String(endWait-startWait) + String(" ms\n"));
-	this->wlan->Log(data + String("\n"));
+    this->wlan->Log(String("################################################\n"));
+    this->wlan->Log(String("Waiting: ") + String(endWait-startWait) + String(" ms\n"));
+    this->wlan->Log(data + String("\n"));
   }
 
   void Send(gpsInfoField gps, float batt, bool as_bytes = false) {
-    //this->lora->idle();
-    //this->lora->beginPacket();
     //if(!as_bytes) {
-      String data = String(espname) + "\n" + String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2); //Gps 9+9+7+5+4 = 34 Char
-      this->Send(data);
-	  //this->lora->print(data);
-      /// Logging
-      //this->wlan->Log(String("################################################\n"));
-      //this->wlan->Log(String(espname) + String("\n"));
-      //this->wlan->Log(data + String("\n"));
+      //Gps 9+9+7+5+4 = 34 Char
+      this->Send(String(espname) + "\n" + String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2));
     /*} else {
       uint8_t lora_data[28];
       lora_data[0] = 'b';
@@ -113,18 +105,10 @@ public:
       }
       this->wlan->Log(g + String("\n"));
     }*/
-    //this->lora->endPacket();
-    //this->lora->sleep();
   }
 
   void Send(uint8_t version, String ip, String ssid, bool wififlag, float battery, int32_t freqoffset) {
-    this->lora->idle();
-    this->lora->beginPacket();
-    this->lora->println("deb");
-    this->lora->println(espname);
-    this->lora->print(String(version)+","+ip+","+ssid+","+(wififlag?"t":"f")+","+String(battery,2)+","+String(freqoffset));
-    this->lora->endPacket();
-    this->lora->sleep();
+    this->Send("deb\n" + String(espname) + "\n" + String(version) + "," + ip + "," + ssid + "," + (wififlag ? "t" : "f") + "," + String(battery, 2) + "," + String(freqoffset));
   }
   #pragma endregion
 
