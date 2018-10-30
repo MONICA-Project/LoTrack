@@ -117,9 +117,10 @@ class WLAN {
       if(debug) {
         Serial.print(text);
       }
-      if(text.substring(text.length() - 1).equals("\n")) {
+      /*if(text.substring(text.length() - 1).equals("\n")) {
         text = text + String("\r");
-      }
+      }*/
+	  text.replace("\n","\n\r");
       for(uint8_t i = 0; i < server_clients; i++) {
         if(this->serverClients[i] && this->serverClients[i].connected()) {
           this->serverClients[i].print(text);

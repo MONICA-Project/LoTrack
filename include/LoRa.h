@@ -114,6 +114,6 @@ private:
   void (*_onReceive)(int);
 };
 
-//extern LoRaClass LoRa;
+extern LoRaClass LoRa;
 
 #endif

@@ -139,7 +139,7 @@ public:
                 }
               }
             }
-            p->lora->Send();
+            p->lora->DebugSend();
             delay(1000);
           }
         }
@@ -178,6 +178,12 @@ public:
 
 private:
   const uint8_t version = 4;
+  /**
+   * 1 Refactoring and Send networksettings over lora
+   * 2 Sleepmode and Powersaving implemented
+   * 3 Add height to Lora transmission
+   * 4 Looking if Lorachannel is free
+   */
   RXTX * s;
   otaclass * aOTA;
   gpsclass * gps;
