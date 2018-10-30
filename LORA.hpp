@@ -32,7 +32,7 @@ public:
       this->lora->setSignalBandwidth(62500);
       this->lora->setSpreadingFactor(8);
       this->lora->setCodingRate4(6);
-      this->lora->setTxPower(17);
+      this->lora->setTxPower(20);
       this->lora->enableCrc();
       //this->lora->disableCrc();
       this->wlan->Box("Lora successful", 90);
