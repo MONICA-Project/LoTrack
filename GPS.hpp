@@ -69,19 +69,15 @@ private:
   #pragma region Parsing
   void Parse(uint8_t c) {
     if(c == '\n') {
-      if(this->data.startsWith("$GNGGA")) {
+      if(this->data.startsWith("$GPGGA") || this->data.startsWith("$GNGGA")) {
         this->data_gga = this->data;
-      } else if(this->data.startsWith("$GPGGA")) {
-        this->data_gga = this->data;
-      } else if(this->data.startsWith("$GPGSA")) {
+      } else if(this->data.startsWith("$GPGSA") || this->data.startsWith("$GNGSA")) {
         this->data_gsa = this->data;
-      } else if(this->data.startsWith("$GNVTG")) {
+      } else if(this->data.startsWith("$GPVTG") || this->data.startsWith("$GNVTG")) {
         this->data_vtg = this->data;
-      } else if(this->data.startsWith("$GPVTG")) {
-        this->data_vtg = this->data;
-      } else if(this->data.startsWith("$GNZDA")) {
+      }  else if(this->data.startsWith("$GNZDA")) {
         this->data_zda = this->data;
-      } else if(this->data.startsWith("$GPRMC")) {
+      } else if(this->data.startsWith("$GPRMC") || this->data.startsWith("$GNRMC")) {
         this->data_rmc = this->data;
       } else if(this->data.startsWith("$GPTXT")) {
         this->ParseGGA(this->data_gga);
@@ -95,7 +91,7 @@ private:
         if(!this->data_gga.equals("") && !this->data_gsa.equals("") && !this->data_vtg.equals("") && !this->data_zda.equals("")) {
           this->hasData = true;
         }
-      } else if(this->data.startsWith("$GPGLL")) {
+      } else if(this->data.startsWith("$GPGLL") || this->data.startsWith("$GNGLL")) {
         this->ParseGGA(this->data_gga);
         this->ParseGSA(this->data_gsa);
         this->ParseVTG(this->data_vtg);
