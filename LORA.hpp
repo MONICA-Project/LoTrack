@@ -60,12 +60,13 @@ public:
 
   #pragma region Send Data
   void Send(String data) {
+    long startWait, endWait;
     if(lbt) {
-        long startWait = millis();
+        startWait = millis();
         while(this->lora->hasChannelActivity()) {
           delay(1);
         }
-        long endWait = millis();
+        endWait = millis();
     }
     this->lora->idle();
     this->lora->beginPacket();
