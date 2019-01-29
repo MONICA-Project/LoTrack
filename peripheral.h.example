@@ -133,6 +133,7 @@ namespace {
   extern int const pin_lora_rst = 21;
   extern int const pin_lora_di0 = 36;
   extern long const lora_band = 867500000;
+  extern bool const listenbeforetalk = false;
   // Battery-Settings
   extern bool const has_battery = true;
   extern int const pin_batt = 35;

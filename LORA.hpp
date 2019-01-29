@@ -13,7 +13,7 @@
 // The SX1278 offers bandwidths and spreading factor options, but only covers the lower UHF bands.
 
 
-template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band, const char* espname>
+template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band, const char* espname, bool lbt>
 class LORA {
 public:
   LORA(wlanclass* wlanclass, Storage * storage) {
@@ -60,18 +60,22 @@ public:
 
   #pragma region Send Data
   void Send(String data) {
-    long startWait = millis();
-    while(this->lora->hasChannelActivity()) {
-      delay(1);
+    if(lbt) {
+        long startWait = millis();
+        while(this->lora->hasChannelActivity()) {
+          delay(1);
+        }
+        long endWait = millis();
     }
-    long endWait = millis();
     this->lora->idle();
     this->lora->beginPacket();
     this->lora->print(data);
     this->lora->endPacket();
     this->lora->sleep();
     this->wlan->Log(String("################################################\n"));
-    this->wlan->Log(String("Waiting: ") + String(endWait-startWait) + String(" ms\n"));
+    if(lbt) {
+        this->wlan->Log(String("Waiting: ") + String(endWait-startWait) + String(" ms\n"));
+    }
     this->wlan->Log(data + String("\n"));
   }
 

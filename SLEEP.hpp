@@ -29,5 +29,5 @@ class Sleep {
     }
   private:
     bool enableSleep = false;
-    const uint64_t sleepTime = 10000;
+    const uint64_t sleepTime = 5000;
 };
