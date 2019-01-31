@@ -13,7 +13,7 @@
 // The SX1278 offers bandwidths and spreading factor options, but only covers the lower UHF bands.
 
 
-template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band, const char* espname, bool lbt>
+template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band, const char* espname, bool lbt, bool binary>
 class LORA {
 public:
   LORA(wlanclass* wlanclass, Storage * storage) {
@@ -80,36 +80,57 @@ public:
     this->wlan->Log(data + String("\n"));
   }
 
-  void Send(gpsInfoField gps, float batt, bool as_bytes = false) {
-    //if(!as_bytes) {
-      //Gps 9+9+7+5+4 = 34 Char
-      this->Send(String(espname) + "\n" + String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2));
-    /*} else {
-      uint8_t lora_data[28];
+  void Send(uint8_t* data, uint8_t size) {
+    long startWait, endWait;
+    if(lbt) {
+      startWait = millis();
+      while(this->lora->hasChannelActivity()) {
+        delay(1);
+      }
+      endWait = millis();
+    }
+    this->lora->idle();
+    this->lora->beginPacket();
+    this->lora->write(data, size);
+    this->lora->endPacket();
+    this->lora->sleep();
+    this->wlan->Log(String("################################################\n"));
+    if(lbt) {
+      this->wlan->Log(String("Waiting: ") + String(endWait - startWait) + String(" ms\n"));
+    }
+
+    String g;
+    for(uint8_t i = 0; i < 28; i++) {
+      g = g + String(data[i], HEX) + String(" ");
+    }
+    this->wlan->Log(g + String("\n"));
+  }
+
+
+  void Send(gpsInfoField gps, float batt) {
+    if(binary) {
+      //Data 1+2+4+4+1+2+3+3+1 = 21 Char
+      uint8_t lora_data[21];
       lora_data[0] = 'b';
-      for(uint8_t i = 0; i < 8; i++) {
+      for(uint8_t i = 0; i < 2; i++) {
         if(strlen(espname) > i) {
           lora_data[i + 1] = esp_name[i];
         } else {
           lora_data[i + 1] = 0;
         }
       }
-      uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[13] = (lat >> 0) & 0x7f; lora_data[12] = (lat >> 7) & 0x7f; lora_data[11] = (lat >> 14) & 0x7f; lora_data[10] = (lat >> 21) & 0x7f; lora_data[9] = (lat >> 28) & 0x0f; //5 Bytes Lat
-      uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[18] = (lon >> 0) & 0x7f; lora_data[17] = (lon >> 7) & 0x7f; lora_data[16] = (lon >> 14) & 0x7f; lora_data[15] = (lon >> 21) & 0x7f; lora_data[14] = (lon >> 28) & 0x0f; //5 Bytes Lon
-      lora_data[19] = String(gps.time.substring(0, 2)).toInt();
-      lora_data[20] = String(gps.time.substring(2, 4)).toInt();
-      lora_data[21] = String(gps.time.substring(4, 6)).toInt();
-      uint64_t hdo = *(uint64_t*)&gps.hdop;      lora_data[26] = (hdo >> 0) & 0x7f; lora_data[25] = (hdo >> 7) & 0x7f; lora_data[24] = (hdo >> 14) & 0x7f; lora_data[23] = (hdo >> 21) & 0x7f; lora_data[22] = (hdo >> 28) & 0x0f; //5 Bytes Hdop
-      lora_data[27] = batt;
-      this->lora->write(lora_data, 28);
-      /// Logging
-      this->wlan->Log(String("################################################\n"));
-      String g;
-      for(uint8_t i = 0; i < 28; i++) {
-        g = g + String(lora_data[i], HEX) + String(" ");
-      }
-      this->wlan->Log(g + String("\n"));
-    }*/
+      uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[6]  = (lat >> 0) & 0xFF; lora_data[5]  = (lat >> 8) & 0xFF; lora_data[4]  = (lat >> 16) & 0xFF; lora_data[3]  = (lat >> 24) & 0xFF;
+      uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[10] = (lon >> 0) & 0xFF; lora_data[9]  = (lon >> 8) & 0xFF; lora_data[8]  = (lon >> 16) & 0xFF; lora_data[7]  = (lon >> 24) & 0xFF; 
+      if(gps.hdop >= 25.5) { lora_data[11] = 255; } else if(gps.hdop <= 25.5 && gps.hdop > 0){ lora_data[11] = (uint8_t)(gps.hdop * 10); } else { lora_data[11] = 0; }
+      lora_data[12] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 0) & 0xFF); lora_data[13] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 8) & 0xFF);
+      lora_data[14] = String(gps.time.substring(0, 2)).toInt(); lora_data[15] = String(gps.time.substring(2, 4)).toInt(); lora_data[16] = String(gps.time.substring(4, 6)).toInt();
+      lora_data[17] = gps.day; lora_data[18] = gps.month; lora_data[19] = (uint8_t)(gps.year - 2000);
+      lora_data[20] = (uint8_t)((batt * 100)-230);
+      this->Send(lora_data, 21);
+    } else {
+      //Gps 9+9+7+5+4 = 34 Char
+      this->Send(String(espname) + "\n" + String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2));
+    }
   }
 
   void Send(uint8_t version, String ip, String ssid, bool wififlag, float battery, int32_t freqoffset) {

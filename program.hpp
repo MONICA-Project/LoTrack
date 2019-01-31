@@ -14,7 +14,7 @@ typedef OTA<esp_name> otaclass;
 #include "GPS.hpp"
 typedef GPS<hardware_serial_id, pin_gps_tx, pin_gps_rx, print_gps_on_serialport> gpsclass;
 #include "LORA.hpp"
-typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_band, esp_name, listenbeforetalk> loraclass;
+typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_band, esp_name, listenbeforetalk, lora_send_binary> loraclass;
 #include "BATTERY.hpp"
 typedef Battery<pin_batt, has_battery> battclass;
 #include <pthread.h>
@@ -77,7 +77,7 @@ public:
       }
       pthread_mutex_lock(&this->mutex_display);
       pthread_mutex_lock(&this->gps->MutexGps);
-      this->lora->Send(this->gps->GetGPSData(), this->batt->GetBattery(), false);
+      this->lora->Send(this->gps->GetGPSData(), this->batt->GetBattery());
       this->led->Blink();
       pthread_mutex_unlock(&this->gps->MutexGps);
       pthread_mutex_unlock(&this->mutex_display);
