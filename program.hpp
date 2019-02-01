@@ -177,13 +177,14 @@ public:
   }
 
 private:
-  const uint8_t version = 5;
+  const uint8_t version = 6;
   /**
    * 1 Refactoring and Send networksettings over lora
    * 2 Sleepmode and Powersaving implemented
    * 3 Add height to Lora transmission
    * 4 Looking if Lorachannel is free (ListenBeforeTalk)
    * 5 Option for LBT, also 5s sleep time, CR to 5, SF to 9 and BW to 125000, fixing a parsing bug for GPS, change the Transmitpower to 20
+   * 6 Create new Binary Version
    */
   RXTX * s;
   otaclass * aOTA;
