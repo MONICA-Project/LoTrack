@@ -30,7 +30,7 @@ public:
       this->wlan->Box("Lora Failed!", 90);
     } else {
       this->lora->setSignalBandwidth(125000);
-      this->lora->setSpreadingFactor(9);
+      this->lora->setSpreadingFactor(10);
       this->lora->setCodingRate4(5);
       this->lora->setTxPower(20);
       this->lora->enableCrc();
@@ -100,7 +100,7 @@ public:
     }
 
     String g;
-    for(uint8_t i = 0; i < 28; i++) {
+    for(uint8_t i = 0; i < size; i++) {
       g = g + String(data[i], HEX) + String(" ");
     }
     this->wlan->Log(g + String("\n"));
@@ -119,8 +119,8 @@ public:
           lora_data[i + 1] = 0;
         }
       }
-      uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[6]  = (lat >> 0) & 0xFF; lora_data[5]  = (lat >> 8) & 0xFF; lora_data[4]  = (lat >> 16) & 0xFF; lora_data[3]  = (lat >> 24) & 0xFF;
-      uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[10] = (lon >> 0) & 0xFF; lora_data[9]  = (lon >> 8) & 0xFF; lora_data[8]  = (lon >> 16) & 0xFF; lora_data[7]  = (lon >> 24) & 0xFF; 
+      uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[3]  = (lat >> 0) & 0xFF; lora_data[4]  = (lat >> 8) & 0xFF; lora_data[5]  = (lat >> 16) & 0xFF; lora_data[6]  = (lat >> 24) & 0xFF;
+      uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[7] = (lon >> 0) & 0xFF; lora_data[8]  = (lon >> 8) & 0xFF; lora_data[9]  = (lon >> 16) & 0xFF; lora_data[10]  = (lon >> 24) & 0xFF; 
       if(gps.hdop >= 25.5) { lora_data[11] = 255; } else if(gps.hdop <= 25.5 && gps.hdop > 0){ lora_data[11] = (uint8_t)(gps.hdop * 10); } else { lora_data[11] = 0; }
       lora_data[12] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 0) & 0xFF); lora_data[13] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 8) & 0xFF);
       lora_data[14] = String(gps.time.substring(0, 2)).toInt(); lora_data[15] = String(gps.time.substring(2, 4)).toInt(); lora_data[16] = String(gps.time.substring(4, 6)).toInt();
