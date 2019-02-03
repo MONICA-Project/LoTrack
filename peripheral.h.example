@@ -132,7 +132,7 @@ namespace {
   extern int const pin_lora_ss = 4;
   extern int const pin_lora_rst = 21;
   extern int const pin_lora_di0 = 36;
-  extern long const lora_band = 867500000;
+  extern long const lora_band = ((esp_name[0] % 8) * 250000) + 866750000;
   extern bool const listenbeforetalk = false;
   extern bool const lora_send_binary = true;
   // Battery-Settings

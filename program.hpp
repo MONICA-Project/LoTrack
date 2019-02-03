@@ -117,6 +117,7 @@ public:
             delay(1000);
           }
           int32_t freq = p->storage->ReadOffsetFreq();
+          p->wlan->Log("Target frequency is: " + String(lora_band) + "\n");
           p->wlan->Log("Frequency offset now: " + String(freq) + "\n");
           p->wlan->Log("Usage for Frequency offset Mode:\n");
           p->wlan->Log("S for Save and Reset, Switch off for not Save!\n");
