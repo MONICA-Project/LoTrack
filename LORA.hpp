@@ -31,7 +31,7 @@ public:
     } else {
       this->lora->setSignalBandwidth(125000);
       this->lora->setSpreadingFactor(10);
-      this->lora->setCodingRate4(5);
+      this->lora->setCodingRate4(7);
       this->lora->setTxPower(20);
       this->lora->enableCrc();
       //this->lora->disableCrc();
