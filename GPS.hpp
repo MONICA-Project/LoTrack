@@ -1,12 +1,13 @@
 #include <mutex>
 #include <pthread.h>
 
-template <int serial_pin, int pin_tx, int pin_rx, bool debug>
+template <int serial_pin, int pin_tx, int pin_rx, bool debug, int pin_enable_gnss>
 class GPS {
 public:
   GPS(wlanclass* wlanclass) {
     this->wlan = wlanclass;
     this->hs = new HardwareSerial(serial_pin);
+    pinMode(pin_enable_gnss, OUTPUT);
   }
 
   #pragma region Start Stop
@@ -14,7 +15,15 @@ public:
     this->wlan->Box("Gps Setup!", 60);
     this->hs->begin(9600, SERIAL_8N1, pin_rx, pin_tx);
     pthread_mutex_init(&this->MutexGps, NULL);
+
+    
+    digitalWrite(pin_enable_gnss, LOW);
+    
     this->wlan->Box("Gps Successfull", 70);
+  }
+
+  void Sleep(){
+    digitalWrite(pin_enable_gnss, HIGH);
   }
 
   void Stop() {

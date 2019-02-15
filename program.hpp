@@ -4,7 +4,7 @@
 #include "LED.hpp"
 #include "STORAGE.hpp"
 #include "SLEEP.hpp"
-typedef LED<pin_led> ledclass;
+typedef LED<pin_led, pin_led_rd, pin_led_gr, pin_led_bl> ledclass;
 #include "OLED.hpp"
 typedef OLED<pin_oled_sda, pin_oled_scl, pin_oled_pwr, use_display> oledclass;
 #include "WLAN.hpp"
@@ -12,7 +12,7 @@ typedef WLAN<wifissid, wifipsk, esp_name, telnet_clients, telnet_port, print_ove
 #include "OTA.hpp"
 typedef OTA<esp_name> otaclass;
 #include "GPS.hpp"
-typedef GPS<hardware_serial_id, pin_gps_tx, pin_gps_rx, print_gps_on_serialport> gpsclass;
+typedef GPS<hardware_serial_id, pin_gps_tx, pin_gps_rx, print_gps_on_serialport, pin_enable_gnss> gpsclass;
 #include "LORA.hpp"
 typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_band, esp_name, listenbeforetalk, lora_send_binary> loraclass;
 #include "BATTERY.hpp"
@@ -34,7 +34,7 @@ public:
   }
 
   void Begin() {
-    this->led->On();
+    this->led->On('r');
     this->sleep->Begin();
     uint8_t sleepReason = this->sleep->GetWakeupReason();
     this->wlan->Begin();
@@ -57,7 +57,7 @@ public:
       this->CreateDispThread();
       this->wlan->Box("Init Ok!", 100);
     }
-    this->led->Off();
+    this->led->Off('r');
     if(sleepReason == 0) {
       this->send_startup_infos = true;
     } else {
@@ -78,7 +78,7 @@ public:
       pthread_mutex_lock(&this->mutex_display);
       pthread_mutex_lock(&this->gps->MutexGps);
       this->lora->Send(this->gps->GetGPSData(), this->batt->GetBattery());
-      this->led->Blink();
+      this->led->Blink('g');
       pthread_mutex_unlock(&this->gps->MutexGps);
       pthread_mutex_unlock(&this->mutex_display);
     } else {
@@ -149,7 +149,7 @@ public:
         if(p->wlan->GetNumClients() != 0) {
           p->wlan->Log("Wirless not shut down, Client connected!\n");
         } else {
-          p->wlan->Log("Wirless shutting down now!\n");
+          p->wlan->Log("Wireless shutting down now!\n");
           loop = false;
           p->wlan->Stop();
           p->disp_thread = false;
@@ -178,7 +178,7 @@ public:
   }
 
 private:
-  const uint8_t version = 6;
+  const uint8_t version = 7;
   /**
    * 1 Refactoring and Send networksettings over lora
    * 2 Sleepmode and Powersaving implemented
@@ -186,6 +186,7 @@ private:
    * 4 Looking if Lorachannel is free (ListenBeforeTalk)
    * 5 Option for LBT, also 5s sleep time, CR to 5, SF to 9 and BW to 125000, fixing a parsing bug for GPS, change the Transmitpower to 20
    * 6 Create new Binary Version
+   * 7 Added GNSS_Enable Pin, RGB LED Support
    */
   RXTX * s;
   otaclass * aOTA;
