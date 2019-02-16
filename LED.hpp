@@ -1,76 +1,86 @@
 
-template<int pin_led, int pin_led_rd, int pin_led_gr, int pin_led_bl>
+template<int pin_led_red, int pin_led_green, int pin_led_blue>
 class LED {
   public:
+    static const uint8_t BLACK = 0;
+    static const uint8_t BLUE = 1;
+    static const uint8_t GREEN = 2;
+    static const uint8_t CYAN = 3;
+    static const uint8_t RED = 4;
+    static const uint8_t MAGENTA = 5;
+    static const uint8_t YELLOW = 6;
+    static const uint8_t WHITE = 7;
+
     LED() {
-      pinMode(pin_led, OUTPUT);
-      pinMode(pin_led_rd, OUTPUT);
-      pinMode(pin_led_gr, OUTPUT);
-      pinMode(pin_led_bl, OUTPUT);    
+      this->setupIO();
     }
-    void Blink(uint8_t c) {
-      this->On(c);
+
+    void Blink(uint8_t mask) {
+      this->Color(mask);
       delay (10);
-      this->Off(c);
-    }
-    void On(uint8_t c) {
-      
-      if (c == 'r') {
-        digitalWrite(pin_led_rd, HIGH); // turn the LED on (HIGH is the voltage level)
-        digitalWrite(pin_led_gr, LOW); // turn the LED on (HIGH is the voltage level)
-        digitalWrite(pin_led_bl, LOW); // turn the LED on (HIGH is the voltage level)
-      }
-      else if (c =='b'){
-        digitalWrite(pin_led_rd, LOW); // turn the LED on (HIGH is the voltage level)
-        digitalWrite(pin_led_gr, LOW); // turn the LED on (HIGH is the voltage level)
-        digitalWrite(pin_led_bl, LOW); // turn the LED on (HIGH is the voltage level)
-      }
-      else if (c =='g'){
-        digitalWrite(pin_led_rd, LOW); // turn the LED on (HIGH is the voltage level)
-        digitalWrite(pin_led_gr, HIGH); // turn the LED on (HIGH is the voltage level)
-        digitalWrite(pin_led_bl, LOW); // turn the LED on (HIGH is the voltage level)
-      }
-      else{
-        digitalWrite(pin_led, HIGH); // turn the LED on (HIGH is the voltage level)
-      }
-
-    }
-    void Off(char c) {
-      
-
-      if (c == 'r') {
-        digitalWrite(pin_led_rd, LOW); // turn the LED on (HIGH is the voltage level)
-      }
-      else if (c =='g'){
-        digitalWrite(pin_led_gr, LOW); // turn the LED on (HIGH is the voltage level)
-      }
-      else if (c =='b'){
-        digitalWrite(pin_led_bl, LOW); // turn the LED on (HIGH is the voltage level)
-      }
-      else{
-        digitalWrite(pin_led, LOW); // turn the LED off by making the voltage LOW
-      }
-      
+      this->Color(this->BLACK);
     }
 
-    void Red() {
-      digitalWrite(pin_led_rd, HIGH); // turn the LED on (HIGH is the voltage level)
-      digitalWrite(pin_led_gr, LOW); // turn the LED on (HIGH is the voltage level)
-      digitalWrite(pin_led_bl, LOW); // turn the LED on (HIGH is the voltage level)
-
+    void Color(uint8_t mask) {
+      if(pin_led_green == 0 && mask & (1 << 1)) {
+        mask |= this->RED;
+      }
+      if(pin_led_blue == 0 && mask & (1 << 0)) {
+        mask |= this->RED;
+      }
+      (mask & (1 << 0)) ? this->BlueOn() : this->BlueOff();
+      (mask & (1 << 1)) ? this->GreenOn() : this->GreenOff();
+      (mask & (1 << 2)) ? this->RedOn() : this->RedOff();
     }
 
-    void Blue() {
-      digitalWrite(pin_led_rd, LOW); // turn the LED on (HIGH is the voltage level)
-      digitalWrite(pin_led_gr, LOW); // turn the LED on (HIGH is the voltage level)
-      digitalWrite(pin_led_bl, HIGH); // turn the LED on (HIGH is the voltage level)
-
+  private:
+    void setupIO() {
+      if(pin_led_red != 0) {
+        pinMode(pin_led_red, OUTPUT);
+      }
+      if(pin_led_green != 0) {
+        pinMode(pin_led_green, OUTPUT);
+      }
+      if(pin_led_blue != 0) {
+        pinMode(pin_led_blue, OUTPUT);
+      }
     }
 
-    void Green() {
-      digitalWrite(pin_led_rd, LOW); // turn the LED on (HIGH is the voltage level)
-      digitalWrite(pin_led_gr, HIGH); // turn the LED on (HIGH is the voltage level)
-      digitalWrite(pin_led_bl, LOW); // turn the LED on (HIGH is the voltage level)
-
+    #pragma region LED-Drives
+    void RedOn() {
+      if(pin_led_red != 0) {
+        digitalWrite(pin_led_red, HIGH);
+      }
     }
+
+    void RedOff() {
+      if(pin_led_red != 0) {
+        digitalWrite(pin_led_red, LOW);
+      }
+    }
+
+    void GreenOn() {
+      if(pin_led_green != 0) {
+        digitalWrite(pin_led_green, HIGH);
+      }
+    }
+
+    void GreenOff() {
+      if(pin_led_green != 0) {
+        digitalWrite(pin_led_green, LOW);
+      }
+    }
+
+    void BlueOn() {
+      if(pin_led_blue != 0) {
+        digitalWrite(pin_led_blue, HIGH);
+      }
+    }
+
+    void BlueOff() {
+      if(pin_led_blue != 0) {
+        digitalWrite(pin_led_blue, LOW);
+      }
+    }
+    #pragma endregion
 };

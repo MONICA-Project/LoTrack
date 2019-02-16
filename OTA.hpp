@@ -40,9 +40,9 @@ public:
     ArduinoOTA.onProgress([this](unsigned int progress, unsigned int total) {
       uint8_t p = progress / (total / 100);
       if(p % 2) {
-        led->On('b');
+        this->led->Color(this->led->BLUE);
       } else {
-        led->Off('b');
+        this->led->Color(this->led->BLACK);
       }
       this->wlan->Log(String(p) + String(" "));
       this->wlan->Box(String("Progess update..."), p);

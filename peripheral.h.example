@@ -1,0 +1,151 @@
+//////// V1 //////////////////////
+namespace {
+  // ESP-Name
+  extern char const esp_name[] = "A";
+  // Wifi-Settings
+  extern char const wifissid[] = "IoT";
+  extern char const wifipsk[] = "";
+  extern int const telnet_clients = 2;
+  extern int const telnet_port = 23;
+  extern bool const print_over_serialport = false;
+  // LED-Settings
+  extern int const pin_ledr = 2;
+  extern int const pin_ledg = 0;
+  extern int const pin_ledb = 0;
+  // Display-Settings
+  extern bool const use_display = true;
+  extern int const pin_oled_sda = 4;
+  extern int const pin_oled_scl = 15;
+  extern int const pin_oled_pwr = 16;
+  // GPS-Settings
+  extern int const hardware_serial_id = 1;
+  extern int const pin_gps_tx = 22;
+  extern int const pin_gps_rx = 23;
+  extern bool const print_gps_on_serialport = true;
+  // Lora-Settings
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 27;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 18;
+  extern int const pin_lora_rst = 14;
+  extern int const pin_lora_di0 = 26;
+  extern long const lora_band = 868100000;
+  // Battery-Settings
+  extern bool const has_battery = false;
+  extern int const pin_batt = 35;
+}
+
+//////////// V2 ////////////////////////
+namespace {
+  // ESP-Name
+  extern char const esp_name[] = "A";
+  // Wifi-Settings
+  extern char const wifissid[] = "IoT";
+  extern char const wifipsk[] = "";
+  extern int const telnet_clients = 2;
+  extern int const telnet_port = 23;
+  extern bool const print_over_serialport = false;
+  // LED-Settings
+  extern int const pin_ledr = 2;
+  extern int const pin_ledg = 0;
+  extern int const pin_ledb = 0;
+  // Display-Settings
+  extern bool const use_display = true;
+  extern int const pin_oled_sda = 21;
+  extern int const pin_oled_scl = 22;
+  extern int const pin_oled_pwr = 16;
+  // GPS-Settings
+  extern int const hardware_serial_id = 1;
+  extern int const pin_gps_tx = 34;
+  extern int const pin_gps_rx = 35;
+  extern bool const print_gps_on_serialport = true;
+  // Lora-Settings
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 27;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 18;
+  extern int const pin_lora_rst = 14;
+  extern int const pin_lora_di0 = 26;
+  extern long const lora_band = 868100000;
+  // Battery-Settings
+  extern bool const has_battery = false;
+  extern int const pin_batt = 35;
+}
+
+////////////// V3-A Only //////////////////////
+namespace {
+  // ESP-Name
+  extern char const esp_name[] = "A";
+  // Wifi-Settings
+  extern char const wifissid[] = "IoT";
+  extern char const wifipsk[] = "";
+  extern int const telnet_clients = 2;
+  extern int const telnet_port = 23;
+  extern bool const print_over_serialport = true;
+  // LED-Settings
+  extern int const pin_ledr = 13;
+  extern int const pin_ledg = 0;
+  extern int const pin_ledb = 0;
+  // Display-Settings
+  extern bool const use_display = false;
+  extern int const pin_oled_sda = 21;
+  extern int const pin_oled_scl = 22;
+  extern int const pin_oled_pwr = 16;
+  // GPS-Settings
+  extern int const hardware_serial_id = 1;
+  extern int const pin_gps_tx = 27;
+  extern int const pin_gps_rx = 34;
+  extern int const pin_enable_gnss = 0;
+  extern bool const print_gps_on_serialport = false;
+  // Lora-Settings
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 18;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 21;
+  extern int const pin_lora_rst = 4;
+  extern int const pin_lora_di0 = 36;
+  extern long const lora_band = 868000000;
+  // Battery-Settings
+  extern bool const has_battery = true;
+  extern int const pin_batt = 35;
+}
+
+////////////// V3 ///////////////////
+namespace {
+  // ESP-Name
+  extern char const esp_name[] = "L";
+  // Wifi-Settings
+  extern char const wifissid[] = "IoT";
+  extern char const wifipsk[] = "";
+  extern int const telnet_clients = 2;
+  extern int const telnet_port = 23;
+  extern bool const print_over_serialport = true;
+  // LED-Settings
+  extern int const pin_ledr = 13;
+  extern int const pin_ledg = 0;
+  extern int const pin_ledb = 0;
+  // Display-Settings
+  extern bool const use_display = false;
+  extern int const pin_oled_sda = 21;
+  extern int const pin_oled_scl = 22;
+  extern int const pin_oled_pwr = 16;
+  // GPS-Settings
+  extern int const hardware_serial_id = 1;
+  extern int const pin_gps_tx = 39;
+  extern int const pin_gps_rx = 34;
+  extern int const pin_enable_gnss = 0;
+  extern bool const print_gps_on_serialport = false;
+  // Lora-Settings
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 18;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 4;
+  extern int const pin_lora_rst = 21;
+  extern int const pin_lora_di0 = 36;
+  extern long const lora_band = ((esp_name[0] % 8) * 250000) + 866750000;
+  extern bool const listenbeforetalk = false;
+  extern bool const lora_send_binary = true;
+  // Battery-Settings
+  extern bool const has_battery = true;
+  extern int const pin_batt = 35;
+}

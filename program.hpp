@@ -4,7 +4,7 @@
 #include "LED.hpp"
 #include "STORAGE.hpp"
 #include "SLEEP.hpp"
-typedef LED<pin_led, pin_led_rd, pin_led_gr, pin_led_bl> ledclass;
+typedef LED<pin_ledr, pin_ledg, pin_ledb> ledclass;
 #include "OLED.hpp"
 typedef OLED<pin_oled_sda, pin_oled_scl, pin_oled_pwr, use_display> oledclass;
 #include "WLAN.hpp"
@@ -12,7 +12,7 @@ typedef WLAN<wifissid, wifipsk, esp_name, telnet_clients, telnet_port, print_ove
 #include "OTA.hpp"
 typedef OTA<esp_name> otaclass;
 #include "GPS.hpp"
-typedef GPS<hardware_serial_id, pin_gps_tx, pin_gps_rx, print_gps_on_serialport, pin_enable_gnss> gpsclass;
+typedef GPS<hardware_serial_id, pin_gps_tx, pin_gps_rx, pin_enable_gnss, print_gps_on_serialport> gpsclass;
 #include "LORA.hpp"
 typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_band, esp_name, listenbeforetalk, lora_send_binary> loraclass;
 #include "BATTERY.hpp"
@@ -34,7 +34,7 @@ public:
   }
 
   void Begin() {
-    this->led->On('r');
+    this->led->Color(this->led->RED);
     this->sleep->Begin();
     uint8_t sleepReason = this->sleep->GetWakeupReason();
     this->wlan->Begin();
@@ -57,7 +57,7 @@ public:
       this->CreateDispThread();
       this->wlan->Box("Init Ok!", 100);
     }
-    this->led->Off('r');
+    this->led->Color(this->led->BLACK);
     if(sleepReason == 0) {
       this->send_startup_infos = true;
     } else {
@@ -77,8 +77,13 @@ public:
       }
       pthread_mutex_lock(&this->mutex_display);
       pthread_mutex_lock(&this->gps->MutexGps);
-      this->lora->Send(this->gps->GetGPSData(), this->batt->GetBattery());
-      this->led->Blink('g');
+      gpsInfoField g = this->gps->GetGPSData();
+      this->lora->Send(g, this->batt->GetBattery());
+      if(g.fix) {
+        this->led->Blink(this->led->YELLOW);
+      } else {
+        this->led->Blink(this->led->GREEN);
+      }
       pthread_mutex_unlock(&this->gps->MutexGps);
       pthread_mutex_unlock(&this->mutex_display);
     } else {

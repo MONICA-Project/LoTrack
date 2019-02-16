@@ -34,7 +34,6 @@ public:
       this->lora->setCodingRate4(7);
       this->lora->setTxPower(20);
       this->lora->enableCrc();
-      //this->lora->disableCrc();
       this->wlan->Box("Lora successful", 90);
       this->_lora_enabled = true;
     }
