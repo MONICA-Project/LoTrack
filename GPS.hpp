@@ -1,7 +1,7 @@
 #include <mutex>
 #include <pthread.h>
 
-template <int serial_pin, int pin_tx, int pin_rx, int pin_gpsmodule_enable, bool debug>
+template <int serial_pin, int pin_tx, int pin_rx, int pin_enable_gnss, bool debug>
 class GPS {
 public:
   GPS(wlanclass* wlanclass) {
@@ -12,6 +12,7 @@ public:
   #pragma region Start Stop
   void Begin() {
     this->wlan->Box("Gps Setup!", 60);
+    setupIO();
     this->hs->begin(9600, SERIAL_8N1, pin_rx, pin_tx);
     pthread_mutex_init(&this->MutexGps, NULL);
     this->wlan->Box("Gps Successfull", 70);
@@ -69,20 +70,20 @@ private:
   bool hasData = false;
 
   void setupIO() {
-    if(pin_gpsmodule_enable != 0) {
-      pinMode(pin_gpsmodule_enable, OUTPUT);
+    if(pin_enable_gnss != 0) {
+      pinMode(pin_enable_gnss, OUTPUT);
     }
   }
 
   void activateDevice() {
-    if(pin_gpsmodule_enable != 0) {
-      digitalWrite(pin_gpsmodule_enable, LOW);
+    if(pin_enable_gnss != 0) {
+      digitalWrite(pin_enable_gnss, LOW);
     }
   }
 
   void deactivateDevice() {
-    if(pin_gpsmodule_enable != 0) {
-      digitalWrite(pin_gpsmodule_enable, HIGH);
+    if(pin_enable_gnss != 0) {
+      digitalWrite(pin_enable_gnss, HIGH);
     }
   }
 
