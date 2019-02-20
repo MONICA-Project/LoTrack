@@ -5,27 +5,28 @@
 #include "STORAGE.hpp"
 #include "SLEEP.hpp"
 
-typedef LED<pin_led_rd, pin_led_gr, pin_led_bl> ledclass;
+typedef LED<pin_ledr, pin_ledg, pin_ledb> ledclass;
 #include "OLED.hpp"
-typedef OLED<pin_oled_sda, pin_oled_scl, pin_oled_pwr, use_display> oledclass;
+typedef OLED<pin_oled_sda, pin_oled_scl, pin_oled_pwr> oledclass;
 #include "WLAN.hpp"
 typedef WLAN<wifissid, wifipsk, esp_name, telnet_clients, telnet_port, print_over_serialport> wlanclass;
 #include "OTA.hpp"
 typedef OTA<esp_name> otaclass;
 #include "GPS.hpp"
-typedef GPS<hardware_serial_id, pin_gps_tx, pin_gps_rx, pin_enable_gnss, print_gps_on_serialport> gpsclass;
+typedef GPS<pin_gps_tx, pin_gps_rx, pin_enable_gnss, print_gps_on_serialport> gpsclass;
 #include "LORA.hpp"
 typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_band, esp_name, listenbeforetalk, lora_send_binary> loraclass;
 #include "BATTERY.hpp"
 typedef Battery<pin_batt> battclass;
-#include "DEVICE.hpp"
-typedef Device<pin_regulator_enable, pin_button> deviceclass;
+#include "BUTTON.hpp"
+typedef Button<pin_regulator_enable, pin_button> buttonclass;
 #include <pthread.h>
 
 class Program {
 public:
   Program() {
     this->s = new RXTX();
+    this->button = new buttonclass();
     this->led = new ledclass();
     this->batt = new battclass();
     this->sleep = new Sleep();
@@ -34,15 +35,10 @@ public:
     this->gps = new gpsclass(this->wlan);
     this->storage = new Storage();
     this->lora = new loraclass(this->wlan, this->storage);
-    this->device = new deviceclass();
   }
 
   void Begin() {
-    //################### TEST AREA #########################################
-    this->device->activateDevice();
-     //######################END TEST AREA######################################
-
-    this->led->Color(this->led->YELLOW);
+    this->led->Color(this->led->RED);
     this->sleep->Begin();
     uint8_t sleepReason = this->sleep->GetWakeupReason();
     this->wlan->Begin();
@@ -75,12 +71,6 @@ public:
   }
 
   void Loop() {
-  //################### TEST AREA #########################################
-    this->device->activateDevice();
-//    this->wlan->Log(String("Button State: "));
-//    this->wlan->Log(String(this->device->readButton()));
-
-  //######################END TEST AREA######################################
     if(this->send_startup_infos) {
       this->send_startup_infos = false;
       this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq());
@@ -94,7 +84,7 @@ public:
       gpsInfoField g = this->gps->GetGPSData();
       this->lora->Send(g, this->batt->GetBattery());
       if(g.fix) {
-        this->led->Blink(this->led->GREEN);
+        this->led->Blink(this->led->YELLOW);
       } else {
         this->led->Blink(this->led->RED);
       }
@@ -217,7 +207,7 @@ private:
   battclass * batt;
   Storage * storage;
   Sleep * sleep;
-  deviceclass * device;
+  buttonclass * button;
   
   pthread_mutex_t mutex_display;
   bool disp_thread = true;

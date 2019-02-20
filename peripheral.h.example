@@ -149,3 +149,43 @@ namespace {
   extern bool const has_battery = true;
   extern int const pin_batt = 35;
 }
+
+////////////// V4 ///////////////////
+namespace {
+  // ESP-Name
+  extern char const esp_name[] = "Q";
+  // Wifi-Settings
+  extern char const wifissid[] = "IoT";
+  extern char const wifipsk[] = "";
+  extern int const telnet_clients = 2;
+  extern int const telnet_port = 23;
+  extern bool const print_over_serialport = true;
+  // Power/Button Settings
+  extern int const pin_regulator_enable = 25;
+  extern int const pin_button = 35;
+  // LED-Settings
+  extern int const pin_ledr = 14;
+  extern int const pin_ledg = 27;
+  extern int const pin_ledb = 12;
+  // Display-Settings
+  extern int const pin_oled_sda = 0;
+  extern int const pin_oled_scl = 0;
+  extern int const pin_oled_pwr = 0;
+  // GPS-Settings
+  extern int const pin_gps_tx = 32;
+  extern int const pin_gps_rx = 33;
+  extern int const pin_enable_gnss = 15;
+  extern bool const print_gps_on_serialport = false;
+  // Lora-Settings
+  extern long const lora_band = ((esp_name[0] % 8) * 250000) + 866750000;
+  extern bool const listenbeforetalk = false;
+  extern bool const lora_send_binary = true;
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 18;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 4;
+  extern int const pin_lora_rst = 21;
+  extern int const pin_lora_di0 = 34;
+  // Battery-Settings
+  extern int const pin_batt = 2;
+}

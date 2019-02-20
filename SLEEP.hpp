@@ -22,6 +22,7 @@ class Sleep {
 
     void TimerSleep() {
       if(this->enableSleep) {
+        esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
         esp_deep_sleep_start();
       } else {
         delay(this->sleepTime);
