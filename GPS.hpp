@@ -7,12 +7,13 @@ public:
   GPS(wlanclass* wlanclass) {
     this->wlan = wlanclass;
     this->hs = new HardwareSerial(serial_pin);
+    this->SetupIO();
   }
 
   #pragma region Start Stop
   void Begin() {
     this->wlan->Box("Gps Setup!", 60);
-    setupIO();
+    
     this->hs->begin(9600, SERIAL_8N1, pin_rx, pin_tx);
     pthread_mutex_init(&this->MutexGps, NULL);
     this->wlan->Box("Gps Successfull", 70);
@@ -24,7 +25,7 @@ public:
   #pragma endregion
 
   void Measure() {
-    this->activateDevice();
+    this->ActivateDevice();
     while (this->running) {
       pthread_mutex_lock(&this->MutexGps);
       char c = this->hs->read();
@@ -40,7 +41,7 @@ public:
       pthread_mutex_unlock(&this->MutexGps);
       delay(1);
     }
-    this->deactivateDevice();
+    this->DeactivateDevice();
   }
 
   bool HasData() {
@@ -69,19 +70,19 @@ private:
   bool running = true;
   bool hasData = false;
 
-  void setupIO() {
+  void SetupIO() {
     if(pin_enable_gnss != 0) {
       pinMode(pin_enable_gnss, OUTPUT);
     }
   }
 
-  void activateDevice() {
+  void ActivateDevice() {
     if(pin_enable_gnss != 0) {
       digitalWrite(pin_enable_gnss, LOW);
     }
   }
 
-  void deactivateDevice() {
+  void DeactivateDevice() {
     if(pin_enable_gnss != 0) {
       digitalWrite(pin_enable_gnss, HIGH);
     }

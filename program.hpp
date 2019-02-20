@@ -17,7 +17,7 @@ typedef GPS<hardware_serial_id, pin_gps_tx, pin_gps_rx, pin_enable_gnss, print_g
 #include "LORA.hpp"
 typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_band, esp_name, listenbeforetalk, lora_send_binary> loraclass;
 #include "BATTERY.hpp"
-typedef Battery<pin_batt, has_battery> battclass;
+typedef Battery<pin_batt> battclass;
 #include "DEVICE.hpp"
 typedef Device<pin_regulator_enable, pin_button> deviceclass;
 #include <pthread.h>
@@ -42,8 +42,7 @@ public:
     this->device->activateDevice();
      //######################END TEST AREA######################################
 
-    
-    this->led->Color(this->led->RED);
+    this->led->Color(this->led->YELLOW);
     this->sleep->Begin();
     uint8_t sleepReason = this->sleep->GetWakeupReason();
     this->wlan->Begin();
@@ -95,9 +94,9 @@ public:
       gpsInfoField g = this->gps->GetGPSData();
       this->lora->Send(g, this->batt->GetBattery());
       if(g.fix) {
-        this->led->Blink(this->led->YELLOW);
-      } else {
         this->led->Blink(this->led->GREEN);
+      } else {
+        this->led->Blink(this->led->RED);
       }
       pthread_mutex_unlock(&this->gps->MutexGps);
       pthread_mutex_unlock(&this->mutex_display);
