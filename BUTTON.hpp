@@ -5,10 +5,7 @@ class Button {
   public:
     Button() {
       this->SetupIO();
-      this->SetWakeup();
-    }
-    float readButton() {
-      return analogRead(pin_button) / 4095;
+      //this->SetWakeup();
     }
 
   private:
@@ -22,7 +19,21 @@ class Button {
       rtc_gpio_pulldown_en((gpio_num_t)pin_button);
       rtc_gpio_set_level((gpio_num_t)pin_regulator_enable, 1);
     }
-    void SetWakeup() {
-
+    /*void SetWakeup() {
+      rtc_gpio_wakeup_enable((gpio_num_t)pin_button, GPIO_INTR_POSEDGE);
+      gpio_isr_handler_add((gpio_num_t)pin_button, this->InterruptHandler(), NULL),
     }
+    static void IRAM_ATTR InterruptHandler(void * arg) {
+      if(rtc_gpio_get_level((gpio_num_t)pin_button) == 0) {
+        return; //Do Nothing, Press Button was to short
+      }
+      delay(5000); //Wait 5s
+      if(rtc_gpio_get_level((gpio_num_t)pin_button) == 0) {
+        return; //Send Lora-Warn!
+      }
+      if(rtc_gpio_get_level((gpio_num_t)pin_button) == 1) {
+        rtc_gpio_set_level((gpio_num_t)pin_regulator_enable, 0);
+        return; //Shutdown Controller
+      }
+    }*/
 };
