@@ -71,6 +71,10 @@ public:
   }
 
   void Loop() {
+	if(this->button->Pressed()) {
+		uint8_t task = this->button->GetTask();
+		this->wlan->Log(String("Task: ")+String(task));
+	}
     if(this->send_startup_infos) {
       this->send_startup_infos = false;
       this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq());
