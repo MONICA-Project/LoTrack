@@ -72,6 +72,7 @@ public:
 
   void Loop() {
 	if(this->button->Pressed()) {
+		this->wlan->Log(String("Begin Getting Task"));
 		uint8_t task = this->button->GetTask();
 		if(task == 2) {
 			this->button->Shutdown();

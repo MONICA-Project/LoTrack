@@ -29,7 +29,7 @@ class Button {
 	
 	void Shutdown() {
 	  rtc_gpio_set_level((gpio_num_t)pin_regulator_enable, 0);
-	  delay(10000);
+	  delay(60000);
 	}
   private:
     void SetupIO() {
