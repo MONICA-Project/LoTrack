@@ -3,7 +3,7 @@
 #include "RXTX.hpp"
 #include "LED.hpp"
 #include "STORAGE.hpp"
-#include "SLEEP.hpp"
+
 
 typedef LED<pin_ledr, pin_ledg, pin_ledb> ledclass;
 #include "OLED.hpp"
@@ -18,18 +18,17 @@ typedef GPS<pin_gps_tx, pin_gps_rx, pin_enable_gnss, print_gps_on_serialport> gp
 typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_band, esp_name, listenbeforetalk, lora_send_binary> loraclass;
 #include "BATTERY.hpp"
 typedef Battery<pin_batt> battclass;
-#include "BUTTON.hpp"
-typedef Button<pin_regulator_enable, pin_button> buttonclass;
+#include "SLEEP.hpp"
+typedef Sleep<pin_regulator_enable, pin_button> sleepclass;
 #include <pthread.h>
 
 class Program {
 public:
   Program() {
     this->s = new RXTX();
-    this->button = new buttonclass();
     this->led = new ledclass();
+    this->sleep = new sleepclass(this->led);
     this->batt = new battclass();
-    this->sleep = new Sleep();
     this->wlan = new wlanclass(new oledclass());
     this->aOTA = new otaclass(this->wlan, this->led);
     this->gps = new gpsclass(this->wlan);
@@ -39,7 +38,6 @@ public:
 
   void Begin() {
     this->led->Color(this->led->RED);
-    this->sleep->Begin();
     uint8_t sleepReason = this->sleep->GetWakeupReason();
     this->wlan->Begin();
     if(sleepReason == 0) {
@@ -51,6 +49,7 @@ public:
     this->gps->Begin();
     this->storage->Begin();
     this->lora->Begin();
+    this->sleep->AttachInterrupt();
     if(sleepReason == 0) {
       this->wlan->Box("Create Threads!", 95);
     }
@@ -71,14 +70,14 @@ public:
   }
 
   void Loop() {
-	if(this->button->Pressed()) {
-		this->wlan->Log(String("Begin Getting Task"));
-		uint8_t task = this->button->GetTask();
-		if(task == 2) {
-			this->button->Shutdown();
-		}
-		this->wlan->Log(String("Task: ")+String(task));
-	}
+    if(this->sleep->ButtonPressed()) {
+      this->wlan->Log(String("Begin Getting Task"));
+      uint8_t task = this->sleep->GetButtonMode();
+      if(task == 2) {
+        this->sleep->Shutdown();
+      }
+      this->wlan->Log(String("Task: ")+String(task));
+    }
     if(this->send_startup_infos) {
       this->send_startup_infos = false;
       this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq());
@@ -106,6 +105,8 @@ public:
     }
     this->sleep->TimerSleep();
   }
+
+  
 
   static void *GpsRunner(void *obj_class) {
     Program *p = ((Program *)obj_class);
@@ -195,7 +196,7 @@ public:
   }
 
 private:
-  const uint8_t version = 8;
+  const uint8_t version = 9;
   /**
    * 1 Refactoring and Send networksettings over lora
    * 2 Sleepmode and Powersaving implemented
@@ -205,6 +206,7 @@ private:
    * 6 Create new Binary Version
    * 7 Added GNSS_Enable Pin, RGB LED Support
    * 8 Added Device_Enable Pin
+   * 9 Merge Button + Sleep together, because of sleepmodes, interrupts and wakeups
    */
   RXTX * s;
   otaclass * aOTA;
@@ -214,8 +216,7 @@ private:
   ledclass * led;
   battclass * batt;
   Storage * storage;
-  Sleep * sleep;
-  buttonclass * button;
+  sleepclass * sleep;
   
   pthread_mutex_t mutex_display;
   bool disp_thread = true;

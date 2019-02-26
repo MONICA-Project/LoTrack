@@ -153,7 +153,7 @@ namespace {
 ////////////// V4 ///////////////////
 namespace {
   // ESP-Name
-  extern char const esp_name[] = "Q";
+  extern char const esp_name[] = "R";
   // Wifi-Settings
   extern char const wifissid[] = "IoT";
   extern char const wifipsk[] = "";
@@ -165,8 +165,8 @@ namespace {
   extern int const pin_button = 35;
   // LED-Settings
   extern int const pin_ledr = 14;
-  extern int const pin_ledg = 27;
-  extern int const pin_ledb = 12;
+  extern int const pin_ledg = 0;
+  extern int const pin_ledb = 0;
   // Display-Settings
   extern int const pin_oled_sda = 0;
   extern int const pin_oled_scl = 0;
@@ -187,5 +187,5 @@ namespace {
   extern int const pin_lora_rst = 21;
   extern int const pin_lora_di0 = 34;
   // Battery-Settings
-  extern int const pin_batt = 2;
+  extern int const pin_batt = 0;
 }
