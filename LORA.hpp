@@ -106,11 +106,15 @@ public:
   }
 
 
-  void Send(gpsInfoField gps, float batt) {
+  void Send(gpsInfoField gps, float batt, bool panic = false) {
     if(binary) {
       //Data 1+2+4+4+1+2+3+3+1 = 21 Char
       uint8_t lora_data[21];
-      lora_data[0] = 'b';
+      if(panic) {
+        lora_data[0] = 'p';
+      } else {
+        lora_data[0] = 'b';
+      }
       for(uint8_t i = 0; i < 2; i++) {
         if(strlen(espname) > i) {
           lora_data[i + 1] = esp_name[i];
