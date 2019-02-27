@@ -49,7 +49,7 @@ public:
     this->gps->Begin();
     this->storage->Begin();
     this->lora->Begin();
-    this->sleep->AttachInterrupt();
+    this->sleep->AttachInterrupt(this->abc, this);
     if(sleepReason == 0) {
       this->wlan->Box("Create Threads!", 95);
     }
@@ -68,16 +68,28 @@ public:
       this->sleep->EnableSleep();
     }
   }
+  
+  static void abc(void * obj_class) {
+    Program *p = ((Program *)obj_class);
+    if(p->sleep->ButtonPressed()) {
+      p->wlan->Log(String("Begin Getting Task\n"));
+      uint8_t task = p->sleep->GetButtonMode();
+      /*if(task == 2) {
+        p->sleep->Shutdown();
+      }*/
+      p->wlan->Log(String("Task: ")+String(task)+String("\n"));
+    }
+  }
 
   void Loop() {
-    if(this->sleep->ButtonPressed()) {
+    /*if(this->sleep->ButtonPressed()) {
       this->wlan->Log(String("Begin Getting Task"));
       uint8_t task = this->sleep->GetButtonMode();
       if(task == 2) {
         this->sleep->Shutdown();
       }
       this->wlan->Log(String("Task: ")+String(task));
-    }
+    }*/
     if(this->send_startup_infos) {
       this->send_startup_infos = false;
       this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq());

@@ -17,27 +17,22 @@ class Sleep {
       return 0;
     }
 
-    void AttachInterrupt() {
-      /*gpio_set_direction((gpio_num_t)pin_button, GPIO_MODE_INPUT);
+    void AttachInterrupt(void (* intr) (void *), void * args) {
+      gpio_set_direction((gpio_num_t)pin_button, GPIO_MODE_INPUT);
       gpio_pulldown_en((gpio_num_t)pin_button);
 
-      gpio_set_intr_type((gpio_num_t)pin_button, GPIO_INTR_HIGH_LEVEL);
-      gpio_intr_enable((gpio_num_t)pin_button);
-      gpio_isr_register(this->InterruptHandler, (void*)pin_button, ESP_INTR_FLAG_LOWMED, NULL);*/
-    }
-
-    static void InterruptHandler(void * arg) {
-      uint32_t gpio_num = (uint32_t)arg;
-      Serial.print("Interrupt\n");
+      gpio_set_intr_type((gpio_num_t)pin_button, GPIO_INTR_POSEDGE);
+      gpio_install_isr_service(ESP_INTR_FLAG_EDGE);
+      gpio_isr_handler_add((gpio_num_t)pin_button, (*intr), args);
     }
 
     void DetachInterrupt() {
-      gpio_intr_disable((gpio_num_t)pin_button);
+      gpio_isr_handler_remove((gpio_num_t)pin_button);
       gpio_reset_pin((gpio_num_t)pin_button);
     }
 
     void EnableSleep() {
-      //this->DetachInterrupt();
+      this->DetachInterrupt();
       this->SetupWakeup();
       this->enableSleep = true;
     }
