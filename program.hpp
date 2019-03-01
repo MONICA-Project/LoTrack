@@ -74,7 +74,7 @@ public:
   void Loop() {
     if(this->sendStartupInfos) {
       this->sendStartupInfos = false;
-      this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq());
+      this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq(), 1);
     }
     if(this->loopThread) {
       while(!this->gps->HasData()) {
@@ -109,16 +109,19 @@ public:
     uint8_t task = p->sleep->GetButtonMode();
     if(task == 2) {
       p->wlan->Log(String("SHUTDOWN!\n"));
+      p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->ReadOffsetFreq(), 0);
       p->sleep->Shutdown();
     }
     if(task == 1) {
       p->wlan->Log(String("PANIC Mode Send!\n"));
+      p->led->Blink(p->led->YELLOW);
       while(!p->gps->HasData()) {
         delay(100);
       }
       pthread_mutex_lock(&p->mutexDisplay);
       pthread_mutex_lock(&p->gps->MutexGps);
       gpsInfoField g = p->gps->GetGPSData();
+      p->led->Blink(p->led->YELLOW);
       p->lora->Send(g, p->batt->GetBattery(), true);
       for(uint8_t i = 0; i < 10; i++) {
         p->led->Blink(p->led->YELLOW);
@@ -193,7 +196,7 @@ public:
           loop = false;
           p->wlan->Stop();
           p->dispThread = false;
-          p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->ReadOffsetFreq());
+          p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->ReadOffsetFreq(), 2);
           p->sleep->EnableSleep();
         }
         count = 0;
@@ -234,6 +237,7 @@ private:
    * 7 Added GNSS_Enable Pin, RGB LED Support
    * 8 Added Device_Enable Pin
    * 9 Added Button support for shutting down the device on long press, also for short press sending the location as emergency
+   * 10 When Shutting down the Device, Send a Lora Status message. Send Panic Message 3 Times with different SF Settings
    */
   RXTX * s;
   otaclass * aOTA;

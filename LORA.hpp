@@ -130,14 +130,21 @@ public:
       lora_data[17] = gps.day; lora_data[18] = gps.month; lora_data[19] = (uint8_t)(gps.year - 2000);
       lora_data[20] = (uint8_t)((batt * 100)-230);
       this->Send(lora_data, 21);
+      if(panic) {
+        this->lora->setSpreadingFactor(11);
+        this->Send(lora_data, 21);
+        this->lora->setSpreadingFactor(12);
+        this->Send(lora_data, 21);
+        this->lora->setSpreadingFactor(10);
+      }
     } else {
       //Gps 9+9+7+5+4 = 34 Char
       this->Send(String(espname) + "\n" + String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2));
     }
   }
 
-  void Send(uint8_t version, String ip, String ssid, bool wififlag, float battery, int32_t freqoffset) {
-    this->Send("deb\n" + String(espname) + "\n" + String(version) + "," + ip + "," + ssid + "," + (wififlag ? "t" : "f") + "," + String(battery, 2) + "," + String(freqoffset));
+  void Send(uint8_t version, String ip, String ssid, bool wififlag, float battery, int32_t freqoffset, uint8_t runningStatus) {
+    this->Send("deb\n" + String(espname) + "\n" + String(version) + "," + ip + "," + ssid + "," + (wififlag ? "t" : "f") + "," + String(battery, 2) + "," + String(freqoffset)+","+String(runningStatus));
   }
   #pragma endregion
 
