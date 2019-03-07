@@ -37,15 +37,16 @@ public:
     });
   }
   void OnProgress() {
-    ArduinoOTA.onProgress([this](unsigned int progress, unsigned int total) {
-      uint8_t p = progress / (total / 100);
-      if(p % 2) {
+    this->blink = 0;
+    ArduinoOTA.onProgress([this](uint32_t progress, uint32_t total) {
+      float p = ((float)progress / total)*100;
+      if(this->blink++ % 2) {
         this->led->Color(this->led->BLUE);
       } else {
         this->led->Color(this->led->BLACK);
       }
-      this->wlan->Log(String(p) + String(" "));
-      this->wlan->Box(String("Progess update..."), p);
+      this->wlan->Log(String(p, 2) + String(" "));
+      this->wlan->Box(String("Progess update..."), (uint8_t)p);
     });
   }
   void OnError() {
@@ -80,6 +81,7 @@ public:
 private:
   wlanclass * wlan;
   ledclass * led;
+  uint32_t blink;
 };
 
 // Port defaults to 8266

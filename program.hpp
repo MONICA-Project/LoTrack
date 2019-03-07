@@ -3,13 +3,13 @@
 #include "RXTX.hpp"
 #include "LED.hpp"
 #include "STORAGE.hpp"
-#include "SLEEP.hpp"
+
 
 typedef LED<pin_ledr, pin_ledg, pin_ledb> ledclass;
 #include "OLED.hpp"
 typedef OLED<pin_oled_sda, pin_oled_scl, pin_oled_pwr> oledclass;
 #include "WLAN.hpp"
-typedef WLAN<wifissid, wifipsk, esp_name, telnet_clients, telnet_port, print_over_serialport> wlanclass;
+typedef WLAN<wifissid, wifipsk, esp_name, 2, 23, print_over_serialport> wlanclass;
 #include "OTA.hpp"
 typedef OTA<esp_name> otaclass;
 #include "GPS.hpp"
@@ -18,18 +18,17 @@ typedef GPS<pin_gps_tx, pin_gps_rx, pin_enable_gnss, print_gps_on_serialport> gp
 typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_band, esp_name, listenbeforetalk, lora_send_binary> loraclass;
 #include "BATTERY.hpp"
 typedef Battery<pin_batt> battclass;
-#include "BUTTON.hpp"
-typedef Button<pin_regulator_enable, pin_button> buttonclass;
+#include "SLEEP.hpp"
+typedef Sleep<pin_regulator_enable, pin_button> sleepclass;
 #include <pthread.h>
 
 class Program {
 public:
   Program() {
     this->s = new RXTX();
-    this->button = new buttonclass();
     this->led = new ledclass();
+    this->sleep = new sleepclass(this->led);
     this->batt = new battclass();
-    this->sleep = new Sleep();
     this->wlan = new wlanclass(new oledclass());
     this->aOTA = new otaclass(this->wlan, this->led);
     this->gps = new gpsclass(this->wlan);
@@ -39,7 +38,6 @@ public:
 
   void Begin() {
     this->led->Color(this->led->RED);
-    this->sleep->Begin();
     uint8_t sleepReason = this->sleep->GetWakeupReason();
     this->wlan->Begin();
     if(sleepReason == 0) {
@@ -51,10 +49,13 @@ public:
     this->gps->Begin();
     this->storage->Begin();
     this->lora->Begin();
+    pthread_mutex_init(&this->sleep->MutexSleep, NULL);
+    pthread_mutex_init(&this->mutexDisplay, NULL);
+    this->CreateButtonThread();
+    this->sleep->AttachInterrupt(this->IsrButtonRoutine, this);
     if(sleepReason == 0) {
       this->wlan->Box("Create Threads!", 95);
     }
-    pthread_mutex_init(&this->mutex_display, NULL);
     this->CreateGpsThread();
     if(sleepReason == 0) {
       this->CreateWlanThread();
@@ -63,40 +64,73 @@ public:
     }
     this->led->Color(this->led->BLACK);
     if(sleepReason == 0) {
-      this->send_startup_infos = true;
+      this->sendStartupInfos = true;
     } else {
-      this->send_startup_infos = false;
+      this->sendStartupInfos = false;
       this->sleep->EnableSleep();
     }
   }
 
   void Loop() {
-    if(this->send_startup_infos) {
-      this->send_startup_infos = false;
-      this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq());
+    if(this->sendStartupInfos) {
+      this->sendStartupInfos = false;
+      this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq(), 1);
     }
-    if(this->loop_thread) {
+    if(this->loopThread) {
       while(!this->gps->HasData()) {
         delay(100);
       }
-      pthread_mutex_lock(&this->mutex_display);
+      pthread_mutex_lock(&this->mutexDisplay);
       pthread_mutex_lock(&this->gps->MutexGps);
       gpsInfoField g = this->gps->GetGPSData();
       this->lora->Send(g, this->batt->GetBattery());
       if(g.fix) {
         this->led->Blink(this->led->YELLOW);
+        delay(100);
+        this->led->Blink(this->led->YELLOW);
       } else {
         this->led->Blink(this->led->RED);
       }
       pthread_mutex_unlock(&this->gps->MutexGps);
-      pthread_mutex_unlock(&this->mutex_display);
+      pthread_mutex_unlock(&this->mutexDisplay);
     } else {
-      if(!this->loop_thread_stopped) {
+      if(!this->loopThreadStopped) {
         this->wlan->Log("Loop Thread stopped!\n");
-        this->loop_thread_stopped = true;
+        this->loopThreadStopped = true;
       }
     }
     this->sleep->TimerSleep();
+  }
+
+  static void *ButtonRunner(void *obj_class) {
+    Program *p = ((Program *)obj_class);
+    p->wlan->Log(String("Start Button Thread\n"));
+    pthread_mutex_lock(&p->sleep->MutexSleep);
+    uint8_t task = p->sleep->GetButtonMode();
+    if(task == 2) {
+      p->wlan->Log(String("SHUTDOWN!\n"));
+      p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->ReadOffsetFreq(), 0);
+      p->sleep->Shutdown();
+    }
+    if(task == 1) {
+      p->wlan->Log(String("PANIC Mode Send!\n"));
+      p->led->Blink(p->led->YELLOW);
+      while(!p->gps->HasData()) {
+        delay(100);
+      }
+      pthread_mutex_lock(&p->mutexDisplay);
+      pthread_mutex_lock(&p->gps->MutexGps);
+      gpsInfoField g = p->gps->GetGPSData();
+      p->led->Blink(p->led->YELLOW);
+      p->lora->Send(g, p->batt->GetBattery(), true);
+      for(uint8_t i = 0; i < 10; i++) {
+        p->led->Blink(p->led->YELLOW);
+        delay(100);
+      }
+      pthread_mutex_unlock(&p->gps->MutexGps);
+      pthread_mutex_unlock(&p->mutexDisplay);
+    }
+    pthread_mutex_unlock(&p->sleep->MutexSleep);
   }
 
   static void *GpsRunner(void *obj_class) {
@@ -104,7 +138,7 @@ public:
     p->wlan->Log("GPS Thread started!\n");
     p->gps->Measure();
     p->wlan->Log("GPS Thread stopped!\n");
-    p->gps_thread_stopped = true;
+    p->gpsThreadStopped = true;
   }
 
   static void *WlanRunner(void *obj_class) {
@@ -120,9 +154,9 @@ public:
         if(command.equals("FREQ")) {
           p->wlan->Log("Stopping all other Threads!\n");
           p->gps->Stop();
-          p->disp_thread = false;
-          p->loop_thread = false;
-          while(!p->disp_thread_stopped || !p->loop_thread_stopped || !p->gps_thread_stopped) {
+          p->dispThread = false;
+          p->loopThread = false;
+          while(!p->dispThreadStopped || !p->loopThreadStopped || !p->gpsThreadStopped) {
             delay(1000);
           }
           int32_t freq = p->storage->ReadOffsetFreq();
@@ -161,8 +195,8 @@ public:
           p->wlan->Log("Wireless shutting down now!\n");
           loop = false;
           p->wlan->Stop();
-          p->disp_thread = false;
-          p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->ReadOffsetFreq());
+          p->dispThread = false;
+          p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->ReadOffsetFreq(), 2);
           p->sleep->EnableSleep();
         }
         count = 0;
@@ -176,18 +210,23 @@ public:
   static void *DispRunner(void *obj_class) {
     Program *p = ((Program *)obj_class);
     p->wlan->Log("DISP Thread started!\n");
-    while (p->disp_thread) {
-      pthread_mutex_lock(&p->mutex_display);
+    while (p->dispThread) {
+      pthread_mutex_lock(&p->mutexDisplay);
       p->wlan->Gps(p->gps->GetGPSData(), p->batt->GetBattery());
-      pthread_mutex_unlock(&p->mutex_display);
+      pthread_mutex_unlock(&p->mutexDisplay);
       delay(5000);
     }
     p->wlan->Log("DISP Thread stopped!\n");
-    p->disp_thread_stopped = true;
+    p->dispThreadStopped = true;
+  }
+
+  static void IsrButtonRoutine(void * obj_class) {
+    Program *p = ((Program *)obj_class);
+    p->CreateButtonThread();
   }
 
 private:
-  const uint8_t version = 8;
+  const uint8_t version = 9;
   /**
    * 1 Refactoring and Send networksettings over lora
    * 2 Sleepmode and Powersaving implemented
@@ -197,6 +236,8 @@ private:
    * 6 Create new Binary Version
    * 7 Added GNSS_Enable Pin, RGB LED Support
    * 8 Added Device_Enable Pin
+   * 9 Added Button support for shutting down the device on long press, also for short press sending the location as emergency
+   * 10 When Shutting down the Device, Send a Lora Status message. Send Panic Message 3 Times with different SF Settings
    */
   RXTX * s;
   otaclass * aOTA;
@@ -206,16 +247,15 @@ private:
   ledclass * led;
   battclass * batt;
   Storage * storage;
-  Sleep * sleep;
-  buttonclass * button;
+  sleepclass * sleep;
   
-  pthread_mutex_t mutex_display;
-  bool disp_thread = true;
-  bool loop_thread = true;
-  bool disp_thread_stopped = false;
-  bool loop_thread_stopped = false;
-  bool gps_thread_stopped = false;
-  bool send_startup_infos = false;
+  pthread_mutex_t mutexDisplay;
+  bool dispThread = true;
+  bool loopThread = true;
+  bool dispThreadStopped = false;
+  bool loopThreadStopped = false;
+  bool gpsThreadStopped = false;
+  bool sendStartupInfos = false;
   
   void CreateGpsThread() {
     pthread_t thread;
@@ -238,6 +278,14 @@ private:
     int return_value = pthread_create(&thread, NULL, &this->DispRunner, this);
     if (return_value) {
       this->wlan->Log(String("Failed to Start DISP-Thread!\n"));
+    }
+  }
+
+  void CreateButtonThread() {
+    pthread_t thread;
+    int return_value = pthread_create(&thread, NULL, &this->ButtonRunner, this);
+    if(return_value) {
+      this->wlan->Log(String("Failed to Start BUTTON-Thread!\n"));
     }
   }
 };
