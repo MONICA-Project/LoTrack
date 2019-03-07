@@ -226,7 +226,7 @@ public:
   }
 
 private:
-  const uint8_t version = 9;
+  const uint8_t version = 10;
   /**
    * 1 Refactoring and Send networksettings over lora
    * 2 Sleepmode and Powersaving implemented
