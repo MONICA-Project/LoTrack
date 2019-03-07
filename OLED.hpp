@@ -4,7 +4,7 @@ template <int pin_sda, int pin_scl, int pin_display>
 class OLED {
   public:
     OLED() {
-      if(pin_display > 0) {
+      if(pin_display != 0) {
         this->display_power();
         this->d = new SSD1306Wire(0x3c, pin_sda, pin_scl);
         this->d->init();
@@ -19,22 +19,22 @@ class OLED {
       }
     }
     void drawString(int16_t x, int16_t y, String text) {
-      if(pin_display > 0) {
+      if(pin_display != 0) {
         this->d->drawString(x, y, text);
       }
     }
     void display() {
-      if(pin_display > 0) {
+      if(pin_display != 0) {
         this->d->display();
       }
     }
     void clear() {
-      if(pin_display > 0) {
+      if(pin_display != 0) {
         this->d->clear();
       }
     }
     void gps(gpsInfoField gpsInfo, float battery) {
-      if(pin_display > 0) {
+      if(pin_display != 0) {
         this->d->clear();
         this->d->drawString(0, 0, "GNSS FIX:");
         this->d->drawString(60, 0, String(gpsInfo.fix ? "true" : "false"));
@@ -54,7 +54,7 @@ class OLED {
       }
     }
     void box(String text, uint8_t percent) {
-      if(pin_display > 0) {
+      if(pin_display != 0) {
         this->d->clear();
         this->drawString(2, 51, text);
         this->d->drawRect(0, 0, 128, 64);
@@ -66,7 +66,7 @@ class OLED {
   private:
     SSD1306Wire* d = NULL;
     void display_power() {
-      if(pin_display > 0) {
+      if(pin_display != 0) {
         pinMode(pin_display, OUTPUT);
         digitalWrite(pin_display, LOW);
         delay(50);
