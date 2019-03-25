@@ -77,6 +77,9 @@ public:
       this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq(), 1);
     }
     if(this->loopThread) {
+      if(this->wlan->GetStatus()) {
+        this->aOTA->Check();
+      }
       while(!this->gps->HasData()) {
         delay(100);
       }
@@ -147,7 +150,6 @@ public:
     uint16_t count = 0;
     bool loop = true;
     while (loop) {
-      p->aOTA->Check();
       p->wlan->ServerClienthandle();
       if(p->wlan->ServerHasData()) {
         String command = p->wlan->GetLastString();
@@ -189,7 +191,7 @@ public:
         }
       }
       if(count > 600) {
-        if(p->wlan->GetNumClients() != 0) {
+        if(p->wlan->GetNumClients() != 0 || p->aOTA->isRunning) {
           p->wlan->Log("Wirless not shut down, Client connected!\n");
         } else {
           p->wlan->Log("Wireless shutting down now!\n");
@@ -226,7 +228,7 @@ public:
   }
 
 private:
-  const uint8_t version = 10;
+  const uint8_t version = 11;
   /**
    * 1 Refactoring and Send networksettings over lora
    * 2 Sleepmode and Powersaving implemented
@@ -238,6 +240,7 @@ private:
    * 8 Added Device_Enable Pin
    * 9 Added Button support for shutting down the device on long press, also for short press sending the location as emergency
    * 10 When Shutting down the Device, Send a Lora Status message. Send Panic Message 3 Times with different SF Settings
+   * 11 Update now in mainthread because of stacksize to small in pthread and displaying the MAC address in the serial log
    */
   RXTX * s;
   otaclass * aOTA;

@@ -1,4 +1,12 @@
-
+/// <summary>
+/// Class that controls the led or the rgb led.
+/// Needs the <typeparamref name="pin_led_red"/> or zero to disable the led complete.
+/// <typeparamref name="pin_led_green"/> as a number or zero to disable the green led (fallback to the red one).
+/// <typeparamref name="pin_led_blue"/> as a number or zero to disable the blue led (fallback to the red one).
+/// </summary>
+/// <typeparam name="pin_led_red">Pin number or zero to disable</typeparam>
+/// <typeparam name="pin_led_green">Pin number or zero to disable</typeparam>
+/// <typeparam name="pin_led_blue">Pin number or zero to disable</typeparam>
 template<int pin_led_red, int pin_led_green, int pin_led_blue>
 class LED {
   public:
@@ -11,16 +19,21 @@ class LED {
     static const uint8_t YELLOW = 6;
     static const uint8_t WHITE = 7;
 
+    /// <summary>Constructor for LED class, setup the io pins</summary>
     LED() {
       this->setupIO();
     }
 
+    /// <summary>Let the led glow 10ms. <typeparamref name="mask"/> is the colormask</summary>
+    /// <typeparam name="mask">The colormask in binary, where bit 0 means blue, bit 1 green and bit 2 red.</typeparam>
     void Blink(uint8_t mask) {
       this->Color(mask);
       delay (10);
       this->Color(this->BLACK);
     }
 
+    /// <summary>Let the led glow continiously. <typeparamref name="mask"/> is the colormask</summary>
+    /// <typeparam name="mask">The colormask in binary, where bit 0 means blue, bit 1 green and bit 2 red.</typeparam>
     void Color(uint8_t mask) {
       if(pin_led_green == 0 && mask & (1 << 1)) {
         mask |= this->RED;

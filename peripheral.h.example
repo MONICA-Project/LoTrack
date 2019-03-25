@@ -153,7 +153,7 @@ namespace {
 ////////////// V4 ///////////////////
 namespace {
   // ESP-Name
-  extern char const esp_name[] = "R";
+  extern char const esp_name[] = "Q";
   // Wifi-Settings
   extern char const wifissid[] = "IoT";
   extern char const wifipsk[] = "";

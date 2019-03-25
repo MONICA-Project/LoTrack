@@ -5,10 +5,11 @@
 template<int pin_regulator_enable, int pin_button>
 class Sleep {
   public:
+    pthread_mutex_t MutexSleep;
+
     Sleep(ledclass * ledclass) {
       this->led = ledclass;
-      this->ResetPin();
-      this->SetupHoldPower();
+      this->SetupPins();
     }
 
     uint8_t GetWakeupReason() {
@@ -24,10 +25,6 @@ class Sleep {
 
     void AttachInterrupt(void (* intr) (void *), void * args) {
       if(pin_button != 0) {
-        /*gpio_reset_pin((gpio_num_t)pin_button);
-        gpio_set_direction((gpio_num_t)pin_button, GPIO_MODE_INPUT);
-        gpio_pulldown_en((gpio_num_t)pin_button);
-        gpio_set_intr_type((gpio_num_t)pin_button, GPIO_INTR_POSEDGE);*/
         gpio_install_isr_service(ESP_INTR_FLAG_EDGE);
         gpio_isr_handler_add((gpio_num_t)pin_button, (*intr), args);
       }
@@ -83,42 +80,32 @@ class Sleep {
       }
     }
 
-    pthread_mutex_t MutexSleep;
   private:
     bool enableSleep = false;
     bool wakeupByButton = false;
     const uint64_t sleepTime = 5000;
     ledclass * led;
 
-    void ResetPin() {
-      if(pin_button != 0) {
-		//gpio_reset_pin((gpio_num_t)pin_button);
-        gpio_config_t io_conf;
-		io_conf.pin_bit_mask = (1ULL << pin_button);
-		io_conf.mode = GPIO_MODE_INPUT;
-		io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-		io_conf.pull_down_en = GPIO_PULLDOWN_ENABLE;
-        io_conf.intr_type = GPIO_INTR_POSEDGE;
-        gpio_config(&io_conf);
-		/*gpio_reset_pin((gpio_num_t)pin_button);
-        gpio_set_direction((gpio_num_t)pin_button, GPIO_MODE_INPUT);
-        gpio_pulldown_en((gpio_num_t)pin_button);
-        gpio_set_intr_type((gpio_num_t)pin_button, GPIO_INTR_POSEDGE);*/
-      }
-    }
-
-    void SetupHoldPower() {
+    void SetupPins() {
       if(pin_regulator_enable != 0) {
         rtc_gpio_init((gpio_num_t)pin_regulator_enable);
         rtc_gpio_set_direction((gpio_num_t)pin_regulator_enable, RTC_GPIO_MODE_OUTPUT_ONLY);
         rtc_gpio_set_level((gpio_num_t)pin_regulator_enable, 1);
+      }
+      if(pin_button != 0) {
+        gpio_config_t io_conf;
+        io_conf.pin_bit_mask = (1ULL << pin_button);
+        io_conf.mode = GPIO_MODE_INPUT;
+        io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+        io_conf.pull_down_en = GPIO_PULLDOWN_ENABLE;
+        io_conf.intr_type = GPIO_INTR_POSEDGE;
+        gpio_config(&io_conf);
       }
     }
 
     void DetachInterrupt() {
       if(pin_button != 0) {
         gpio_isr_handler_remove((gpio_num_t)pin_button);
-        //gpio_reset_pin((gpio_num_t)pin_button);
       }
     }
 
