@@ -240,7 +240,7 @@ private:
    * 8 Added Device_Enable Pin
    * 9 Added Button support for shutting down the device on long press, also for short press sending the location as emergency
    * 10 When Shutting down the Device, Send a Lora Status message. Send Panic Message 3 Times with different SF Settings
-   * 11 Update now in mainthread because of stacksize to small in pthread and displaying the MAC address in the serial log
+   * 11 OTA Update now in mainthread because of stacksize to small in pthread and displaying the MAC address in the serial log
    */
   RXTX * s;
   otaclass * aOTA;
