@@ -7,6 +7,7 @@ class Sleep {
   public:
     Sleep(ledclass * ledclass) {
       this->led = ledclass;
+      this->ResetPin();
       this->SetupHoldPower();
     }
 
@@ -23,11 +24,10 @@ class Sleep {
 
     void AttachInterrupt(void (* intr) (void *), void * args) {
       if(pin_button != 0) {
-        touch_pad_deinit();
-        gpio_reset_pin((gpio_num_t)pin_button);
+        /*gpio_reset_pin((gpio_num_t)pin_button);
         gpio_set_direction((gpio_num_t)pin_button, GPIO_MODE_INPUT);
         gpio_pulldown_en((gpio_num_t)pin_button);
-        gpio_set_intr_type((gpio_num_t)pin_button, GPIO_INTR_POSEDGE);
+        gpio_set_intr_type((gpio_num_t)pin_button, GPIO_INTR_POSEDGE);*/
         gpio_install_isr_service(ESP_INTR_FLAG_EDGE);
         gpio_isr_handler_add((gpio_num_t)pin_button, (*intr), args);
       }
@@ -51,7 +51,7 @@ class Sleep {
 
     uint8_t GetButtonMode() {
       if(pin_button != 0) {
-        if(rtc_gpio_get_level((gpio_num_t)pin_button) == 0) {
+        if(gpio_get_level((gpio_num_t)pin_button) == 0) {
           if(this->wakeupByButton) {
             this->wakeupByButton = false;
             return 1;
@@ -62,13 +62,13 @@ class Sleep {
         for(uint8_t i = 0; i < 50; i++) {
           delay(100); //Wait 50 * 100ms = 5s
           this->led->Color((i % 2 == 0) ? this->led->BLACK : this->led->WHITE);
-          if(rtc_gpio_get_level((gpio_num_t)pin_button) == 0) {
+          if(gpio_get_level((gpio_num_t)pin_button) == 0) {
             this->led->Color(this->led->BLACK);
             return 1; //Send Lora-Warn!
           }
         }
         this->led->Color(this->led->BLACK);
-        if(rtc_gpio_get_level((gpio_num_t)pin_button) == 1) {
+        if(gpio_get_level((gpio_num_t)pin_button) == 1) {
           return 2; //Shutdown Controller
         }
       }
@@ -90,6 +90,23 @@ class Sleep {
     const uint64_t sleepTime = 5000;
     ledclass * led;
 
+    void ResetPin() {
+      if(pin_button != 0) {
+		//gpio_reset_pin((gpio_num_t)pin_button);
+        gpio_config_t io_conf;
+		io_conf.pin_bit_mask = (1ULL << pin_button);
+		io_conf.mode = GPIO_MODE_INPUT;
+		io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+		io_conf.pull_down_en = GPIO_PULLDOWN_ENABLE;
+        io_conf.intr_type = GPIO_INTR_POSEDGE;
+        gpio_config(&io_conf);
+		/*gpio_reset_pin((gpio_num_t)pin_button);
+        gpio_set_direction((gpio_num_t)pin_button, GPIO_MODE_INPUT);
+        gpio_pulldown_en((gpio_num_t)pin_button);
+        gpio_set_intr_type((gpio_num_t)pin_button, GPIO_INTR_POSEDGE);*/
+      }
+    }
+
     void SetupHoldPower() {
       if(pin_regulator_enable != 0) {
         rtc_gpio_init((gpio_num_t)pin_regulator_enable);
@@ -101,7 +118,7 @@ class Sleep {
     void DetachInterrupt() {
       if(pin_button != 0) {
         gpio_isr_handler_remove((gpio_num_t)pin_button);
-        gpio_reset_pin((gpio_num_t)pin_button);
+        //gpio_reset_pin((gpio_num_t)pin_button);
       }
     }
 
