@@ -160,9 +160,9 @@ namespace {
   extern bool const print_over_serialport = true;
   // Power/Button Settings
   extern int const pin_regulator_enable = 25;
-  extern int const pin_button = 35;
+  extern int const pin_button = 13;
   // LED-Settings
-  extern int const pin_ledr = 14;
+  extern int const pin_ledr = 27;
   extern int const pin_ledg = 0;
   extern int const pin_ledb = 0;
   // Display-Settings
@@ -170,9 +170,9 @@ namespace {
   extern int const pin_oled_scl = 0;
   extern int const pin_oled_pwr = 0;
   // GPS-Settings
-  extern int const pin_gps_tx = 32;
-  extern int const pin_gps_rx = 33;
-  extern int const pin_enable_gnss = 15;
+  extern int const pin_gps_tx = 33;
+  extern int const pin_gps_rx = 32;
+  extern int const pin_enable_gnss = 17;
   extern bool const print_gps_on_serialport = false;
   // Lora-Settings
   extern long const lora_band = ((esp_name[0] % 8) * 250000) + 866750000;
@@ -185,5 +185,5 @@ namespace {
   extern int const pin_lora_rst = 21;
   extern int const pin_lora_di0 = 34;
   // Battery-Settings
-  extern int const pin_batt = 0;
+  extern int const pin_batt = 35;
 }

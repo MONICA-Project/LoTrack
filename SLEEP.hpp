@@ -23,6 +23,8 @@ class Sleep {
 
     void AttachInterrupt(void (* intr) (void *), void * args) {
       if(pin_button != 0) {
+        touch_pad_deinit();
+        gpio_reset_pin((gpio_num_t)pin_button);
         gpio_set_direction((gpio_num_t)pin_button, GPIO_MODE_INPUT);
         gpio_pulldown_en((gpio_num_t)pin_button);
         gpio_set_intr_type((gpio_num_t)pin_button, GPIO_INTR_POSEDGE);
