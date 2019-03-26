@@ -42,15 +42,15 @@ class LORA {
     void Begin() {
       this->wlan->Box("Setup Lora!", 80);
       if (!this->lora->begin (band + this->storage->ReadOffsetFreq())) {
-	      this->wlan->Box("Lora Failed!", 90);
+        this->wlan->Box("Lora Failed!", 90);
       } else {
-	      this->lora->setSignalBandwidth(125000);
-	      this->lora->setSpreadingFactor(10);
-	      this->lora->setCodingRate4(7);
-	      this->lora->setTxPower(20);
-	      this->lora->enableCrc();
-	      this->wlan->Box("Lora successful", 90);
-	      this->_lora_enabled = true;
+        this->lora->setSignalBandwidth(125000);
+        this->lora->setSpreadingFactor(10);
+        this->lora->setCodingRate4(7);
+        this->lora->setTxPower(20);
+        this->lora->enableCrc();
+        this->wlan->Box("Lora successful", 90);
+        this->_lora_enabled = true;
       }
     }
 
@@ -82,11 +82,11 @@ class LORA {
     void Send(String data) {
       long startWait, endWait;
       if(lbt) {
-	      startWait = millis();
-	      while(this->lora->hasChannelActivity()) {
-		      delay(1);
-	      }
-	      endWait = millis();
+        startWait = millis();
+        while(this->lora->hasChannelActivity()) {
+          delay(1);
+        }
+        endWait = millis();
       }
       this->lora->idle();
       this->lora->beginPacket();
@@ -95,7 +95,7 @@ class LORA {
       this->lora->sleep();
       this->wlan->Log(String("################################################\n"));
       if(lbt) {
-	      this->wlan->Log(String("Waiting: ") + String(endWait-startWait) + String(" ms\n"));
+        this->wlan->Log(String("Waiting: ") + String(endWait-startWait) + String(" ms\n"));
       }
       this->wlan->Log(data + String("\n"));
     }
@@ -106,11 +106,11 @@ class LORA {
     void Send(uint8_t* data, uint8_t size) {
       long startWait, endWait;
       if(lbt) {
-	      startWait = millis();
-	      while(this->lora->hasChannelActivity()) {
-	      delay(1);
-	      }
-	      endWait = millis();
+        startWait = millis();
+        while(this->lora->hasChannelActivity()) {
+        delay(1);
+        }
+        endWait = millis();
       }
       this->lora->idle();
       this->lora->beginPacket();
@@ -119,12 +119,12 @@ class LORA {
       this->lora->sleep();
       this->wlan->Log(String("################################################\n"));
       if(lbt) {
-	      this->wlan->Log(String("Waiting: ") + String(endWait - startWait) + String(" ms\n"));
+        this->wlan->Log(String("Waiting: ") + String(endWait - startWait) + String(" ms\n"));
       }
 
       String g;
       for(uint8_t i = 0; i < size; i++) {
-	      g = g + String(data[i], HEX) + String(" ");
+        g = g + String(data[i], HEX) + String(" ");
       }
       this->wlan->Log(g + String("\n"));
     }
@@ -135,38 +135,38 @@ class LORA {
     /// <typeparam name="panic">optional, if true data will send as panic item</typeparam>
     void Send(gpsInfoField gps, float batt, bool panic = false) {
       if(binary) {
-	      //Data 1+2+4+4+1+2+3+3+1 = 21 Char
-	      uint8_t lora_data[21];
-	      if(panic) {
-	      lora_data[0] = 'p';
-	      } else {
-	      lora_data[0] = 'b';
-	      }
-	      for(uint8_t i = 0; i < 2; i++) {
-	      if(strlen(espname) > i) {
-		      lora_data[i + 1] = esp_name[i];
-	      } else {
-		      lora_data[i + 1] = 0;
-	      }
-	      }
-	      uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[3]  = (lat >> 0) & 0xFF; lora_data[4]  = (lat >> 8) & 0xFF; lora_data[5]  = (lat >> 16) & 0xFF; lora_data[6]  = (lat >> 24) & 0xFF;
-	      uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[7] = (lon >> 0) & 0xFF; lora_data[8]  = (lon >> 8) & 0xFF; lora_data[9]  = (lon >> 16) & 0xFF; lora_data[10]  = (lon >> 24) & 0xFF; 
-	      if(gps.hdop >= 25.5) { lora_data[11] = 255; } else if(gps.hdop <= 25.5 && gps.hdop > 0){ lora_data[11] = (uint8_t)(gps.hdop * 10); } else { lora_data[11] = 0; }
-	      lora_data[12] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 0) & 0xFF); lora_data[13] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 8) & 0xFF);
-	      lora_data[14] = String(gps.time.substring(0, 2)).toInt(); lora_data[15] = String(gps.time.substring(2, 4)).toInt(); lora_data[16] = String(gps.time.substring(4, 6)).toInt();
-	      lora_data[17] = gps.day; lora_data[18] = gps.month; lora_data[19] = (uint8_t)(gps.year - 2000);
-	      lora_data[20] = (uint8_t)((batt * 100)-230);
-	      this->Send(lora_data, 21);
-	      if(panic) {
-	      this->lora->setSpreadingFactor(11);
-	      this->Send(lora_data, 21);
-	      this->lora->setSpreadingFactor(12);
-	      this->Send(lora_data, 21);
-	      this->lora->setSpreadingFactor(10);
-	      }
+        //Data 1+2+4+4+1+2+3+3+1 = 21 Char
+        uint8_t lora_data[21];
+        if(panic) {
+        lora_data[0] = 'p';
+        } else {
+        lora_data[0] = 'b';
+        }
+        for(uint8_t i = 0; i < 2; i++) {
+        if(strlen(espname) > i) {
+          lora_data[i + 1] = esp_name[i];
+        } else {
+          lora_data[i + 1] = 0;
+        }
+        }
+        uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[3]  = (lat >> 0) & 0xFF; lora_data[4]  = (lat >> 8) & 0xFF; lora_data[5]  = (lat >> 16) & 0xFF; lora_data[6]  = (lat >> 24) & 0xFF;
+        uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[7] = (lon >> 0) & 0xFF; lora_data[8]  = (lon >> 8) & 0xFF; lora_data[9]  = (lon >> 16) & 0xFF; lora_data[10]  = (lon >> 24) & 0xFF; 
+        if(gps.hdop >= 25.5) { lora_data[11] = 255; } else if(gps.hdop <= 25.5 && gps.hdop > 0){ lora_data[11] = (uint8_t)(gps.hdop * 10); } else { lora_data[11] = 0; }
+        lora_data[12] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 0) & 0xFF); lora_data[13] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 8) & 0xFF);
+        lora_data[14] = String(gps.time.substring(0, 2)).toInt(); lora_data[15] = String(gps.time.substring(2, 4)).toInt(); lora_data[16] = String(gps.time.substring(4, 6)).toInt();
+        lora_data[17] = gps.day; lora_data[18] = gps.month; lora_data[19] = (uint8_t)(gps.year - 2000);
+        lora_data[20] = (uint8_t)((batt * 100)-230);
+        this->Send(lora_data, 21);
+        if(panic) {
+        this->lora->setSpreadingFactor(11);
+        this->Send(lora_data, 21);
+        this->lora->setSpreadingFactor(12);
+        this->Send(lora_data, 21);
+        this->lora->setSpreadingFactor(10);
+        }
       } else {
-	      //Gps 9+9+7+5+4 = 34 Char
-	      this->Send(String(espname) + "\n" + String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2));
+        //Gps 9+9+7+5+4 = 34 Char
+        this->Send(String(espname) + "\n" + String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2));
       }
     }
 
