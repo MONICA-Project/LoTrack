@@ -18,21 +18,25 @@ class OLED {
         this->box("Oled Init!", 10);
       }
     }
+
     void drawString(int16_t x, int16_t y, String text) {
       if(pin_display != 0) {
         this->d->drawString(x, y, text);
       }
     }
+
     void display() {
       if(pin_display != 0) {
         this->d->display();
       }
     }
+
     void clear() {
       if(pin_display != 0) {
         this->d->clear();
       }
     }
+
     void gps(gpsInfoField gpsInfo, float battery) {
       if(pin_display != 0) {
         this->d->clear();
@@ -53,6 +57,7 @@ class OLED {
         this->d->display();
       }
     }
+
     void box(String text, uint8_t percent) {
       if(pin_display != 0) {
         this->d->clear();
