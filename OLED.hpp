@@ -1,10 +1,17 @@
 #include <SSD1306Wire.h>
-  
-template <int pin_sda, int pin_scl, int pin_display>
+
+/// <summary>
+/// Class to Write on a OLED Display
+/// </summary>
+/// <typeparam name="pin_sda">Pin number of SDA pin on the controller</typeparam>
+/// <typeparam name="pin_scl">Pin number of SCL pin on the controller</typeparam>
+/// <typeparam name="pin_display_reset">Pin number of pin to reset the OLED. If zero display is disabled</typeparam>
+template <int pin_sda, int pin_scl, int pin_display_reset>
 class OLED {
   public:
+    /// <summary>Constructor for OLED class, setup the io pins and init the display</summary>
     OLED() {
-      if(pin_display != 0) {
+      if(pin_display_reset != 0) {
         this->display_power();
         this->d = new SSD1306Wire(0x3c, pin_sda, pin_scl);
         this->d->init();
@@ -19,26 +26,35 @@ class OLED {
       }
     }
 
+    /// <summary>Write a String on the display</summary>
+    /// <typeparam name="x">x coordinates from left</typeparam>
+    /// <typeparam name="y">y coordinates from top</typeparam>
+    /// <typeparam name="text">String to display</typeparam>
     void drawString(int16_t x, int16_t y, String text) {
       if(pin_display != 0) {
         this->d->drawString(x, y, text);
       }
     }
 
+    /// <summary>Call to display the current changes</summary>
     void display() {
-      if(pin_display != 0) {
+      if(pin_display_reset != 0) {
         this->d->display();
       }
     }
 
+    /// <summary>Call to clear the whole display content</summary>
     void clear() {
-      if(pin_display != 0) {
+      if(pin_display_reset != 0) {
         this->d->clear();
       }
     }
 
+    /// <summary>Write a table with gps and battery informations on the screen</summary>
+    /// <typeparam name="gpsInfo">struct gpsInfoField, with all nessesary gps informations</typeparam>
+    /// <typeparam name="battery">voltage of the battery value</typeparam>
     void gps(gpsInfoField gpsInfo, float battery) {
-      if(pin_display != 0) {
+      if(pin_display_reset != 0) {
         this->d->clear();
         this->d->drawString(0, 0, "GNSS FIX:");
         this->d->drawString(60, 0, String(gpsInfo.fix ? "true" : "false"));
@@ -58,8 +74,11 @@ class OLED {
       }
     }
 
+    /// <summary>Plotting a box with a progessbar and text inside</summary>
+    /// <typeparam name="text">Text insode the box</typeparam>
+    /// <typeparam name="percent">percent value for the progessbar</typeparam>
     void box(String text, uint8_t percent) {
-      if(pin_display != 0) {
+      if(pin_display_reset != 0) {
         this->d->clear();
         this->drawString(2, 51, text);
         this->d->drawRect(0, 0, 128, 64);
@@ -71,11 +90,11 @@ class OLED {
   private:
     SSD1306Wire* d = NULL;
     void display_power() {
-      if(pin_display != 0) {
-        pinMode(pin_display, OUTPUT);
-        digitalWrite(pin_display, LOW);
+      if(pin_display_reset != 0) {
+        pinMode(pin_display_reset, OUTPUT);
+        digitalWrite(pin_display_reset, LOW);
         delay(50);
-        digitalWrite(pin_display, HIGH);
+        digitalWrite(pin_display_reset, HIGH);
       }
     }
 };
