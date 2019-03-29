@@ -1,3 +1,4 @@
+/// <summary>Stucture for exchange GPS informations</summary>
 struct gpsInfoField {
   bool fix = false;
   uint8_t fixtype = 1;
@@ -16,6 +17,7 @@ struct gpsInfoField {
   uint16_t year = 0;
 };
 
+/// <summary>Structure for exchange wirelss network informations</summary>
 struct macInfoField {
   String mac_Address = "000000000000"; // 12 character array
   String mac_RSSI = "0000"; // 4 character array
