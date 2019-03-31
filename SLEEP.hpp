@@ -64,7 +64,7 @@ class Sleep {
             return 1; //Send Lora-Warn!
           }
         }
-        this->led->Color(this->led->BLACK);
+        this->led->Color(this->led->WHITE);
         if(gpio_get_level((gpio_num_t)pin_button) == 1) {
           return 2; //Shutdown Controller
         }

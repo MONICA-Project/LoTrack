@@ -108,7 +108,7 @@ class Program {
       this->sleep->TimerSleep();
     }
   private:
-    const uint8_t version = 11;
+    const uint8_t version = 12;
     /**
      * 1 Refactoring and Send networksettings over lora
      * 2 Sleepmode and Powersaving implemented
@@ -121,6 +121,7 @@ class Program {
      * 9 Added Button support for shutting down the device on long press, also for short press sending the location as emergency
      * 10 When Shutting down the Device, Send a Lora Status message. Send Panic Message 3 Times with different SF Settings
      * 11 OTA Update now in mainthread because of stacksize to small in pthread and displaying the MAC address in the serial log
+     * 12 Add a primitive mutex, so that an corrupted esp not create tons of button threads and the controller crashs, also change led behavour
      */
     RXTX * s;
     otaclass * aOTA;
@@ -139,6 +140,7 @@ class Program {
     bool loopThreadStopped = false;
     bool gpsThreadStopped = false;
     bool sendStartupInfos = false;
+    volatile bool buttonIsRunning = false;
   
     void CreateGpsThread() {
       pthread_t thread;
@@ -259,6 +261,10 @@ class Program {
     }
 
     void CreateButtonThread() {
+      if(this->buttonIsRunning) {
+        return;
+      }
+      this->buttonIsRunning = true;
       pthread_t thread;
       int return_value = pthread_create(&thread, NULL, &this->ButtonRunner, this);
       if(return_value) {
@@ -278,22 +284,23 @@ class Program {
       }
       if (task == 1) {
         p->wlan->Log(String("PANIC Mode Send!\n"));
-        p->led->Blink(p->led->YELLOW);
+        for(uint8_t i = 0; i < 5; i++) {
+          p->led->Blink(p->led->YELLOW);
+          delay(100);
+        }
+        p->led->Color(p->led->YELLOW);
         while (!p->gps->HasData()) {
           delay(100);
         }
         pthread_mutex_lock(&p->mutexDisplay);
         pthread_mutex_lock(&p->gps->MutexGps);
         gpsInfoField g = p->gps->GetGPSData();
-        p->led->Blink(p->led->YELLOW);
         p->lora->Send(g, p->batt->GetBattery(), true);
-        for (uint8_t i = 0; i < 10; i++) {
-          p->led->Blink(p->led->YELLOW);
-          delay(100);
-        }
+        p->led->Color(p->led->BLACK);
         pthread_mutex_unlock(&p->gps->MutexGps);
         pthread_mutex_unlock(&p->mutexDisplay);
       }
       pthread_mutex_unlock(&p->sleep->MutexSleep);
+      p->buttonIsRunning = false;
     }
 };

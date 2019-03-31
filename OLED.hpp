@@ -31,7 +31,7 @@ class OLED {
     /// <typeparam name="y">y coordinates from top</typeparam>
     /// <typeparam name="text">String to display</typeparam>
     void drawString(int16_t x, int16_t y, String text) {
-      if(pin_display != 0) {
+      if(pin_display_reset != 0) {
         this->d->drawString(x, y, text);
       }
     }
