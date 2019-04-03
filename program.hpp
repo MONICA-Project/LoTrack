@@ -214,7 +214,7 @@ class Program {
               p->lora->DebugSend();
               delay(1000);
             }
-          } else if (command.equal("BATT")) {
+          } else if (command.equals("BATT")) {
             float_t batt = p->storage->ReadBatteryOffset();
             p->wlan->Log("Battery offset now: " + String(batt,2) + "\n");
             p->wlan->Log("Usage for Battery offset Mode:\n");
@@ -233,7 +233,7 @@ class Program {
                   ESP.restart();
                 } else {
                   float_t l = r.toFloat();
-                  if (l != 0) {
+                  if (!isnan(l)) {
                     batt = l;
                     p->wlan->Log("Offset: " + String(batt, 2) + "\n");
                     p->batt->SetOffset(batt);
