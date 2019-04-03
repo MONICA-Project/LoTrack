@@ -51,6 +51,7 @@ class Program {
       this->gps->Begin();
       this->storage->Begin();
       this->lora->Begin();
+      this->batt->Begin();
       pthread_mutex_init(&this->sleep->MutexSleep, NULL);
       pthread_mutex_init(&this->mutexDisplay, NULL);
       this->CreateButtonThread();

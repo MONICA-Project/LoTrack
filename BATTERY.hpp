@@ -10,6 +10,10 @@ class Battery {
     Battery(Storage * storage) {
       this->storage = storage;
       this->SetupIO();
+    }
+
+    /// <summary>Begin Battery, Readout the offset</summary>
+    void Begin() {
       this->batteryoffset = this->storage->ReadBatteryOffset();
     }
 
