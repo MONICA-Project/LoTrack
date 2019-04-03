@@ -2,16 +2,25 @@
 #include <mutex>
 #include <pthread.h>
 
+/// <summary>
+/// Class to enable Sleepmodes and Wakeup
+/// </summary>
+/// <typeparam name="pin_regulator_enable">Pin number of Pin to hold the EN-Pin from the Powerregulator high, zero to diable function</typeparam>
+/// <typeparam name="pin_button">Pin number of the Button-Pin, zero disables button</typeparam>
 template<int pin_regulator_enable, int pin_button>
 class Sleep {
   public:
+    /// <summary>Mutex for not going to sleep, when parsing Button</summary>
     pthread_mutex_t MutexSleep;
 
+    /// <summary>Constructor for Sleep class, setup the io pins</summary>
     Sleep(ledclass * ledclass) {
       this->led = ledclass;
       this->SetupPins();
     }
 
+    /// <summary>Readout the reason why the ESP starts.</summary>
+    /// <returns>Returns 1 if the ESP waked up from Interrupt or by Timer, 0 if the ESP was powered on</returns>
     uint8_t GetWakeupReason() {
       esp_sleep_wakeup_cause_t r = esp_sleep_get_wakeup_cause();
       if(r == ESP_SLEEP_WAKEUP_TIMER || r == ESP_SLEEP_WAKEUP_EXT0) {
@@ -23,6 +32,9 @@ class Sleep {
       return 0;
     }
 
+    /// <summary>Attatch a function that is called, if the button is pressed</summary>
+    /// <typeparam name="intr">Pointer to a static void funct(void * args) function</typeparam>
+    /// <typeparam name="args">Pointer to an object that is the first parameter to the function</typeparam>
     void AttachInterrupt(void (* intr) (void *), void * args) {
       if(pin_button != 0) {
         gpio_install_isr_service(ESP_INTR_FLAG_EDGE);
@@ -30,10 +42,12 @@ class Sleep {
       }
     }
 
+    /// <summary>Call to activate deepsleep mode</summary>
     void EnableSleep() {
       this->enableSleep = true;
     }
 
+    /// <summary>Call to make a Sleep, depends on calling of EnableSleep if deepsleep mode or delay is used</summary>
     void TimerSleep() {
       if(this->enableSleep) {
         this->DetachInterrupt();
@@ -46,6 +60,8 @@ class Sleep {
       }
     }
 
+    /// <summary>Readout how long is the Button pressed</summary>
+    /// <returns>Return 0 if button was not pressed, 1 if shorter than 5s, and 2 if longer than 5s</returns>
     uint8_t GetButtonMode() {
       if(pin_button != 0) {
         if(gpio_get_level((gpio_num_t)pin_button) == 0) {
@@ -72,14 +88,15 @@ class Sleep {
       return 0;
     }
 
+    /// <summary>Call to Shutdown the device</summary>
     void Shutdown() {
       if(pin_regulator_enable != 0) { //Only possible if hardware can shutdown itselfs
         this->led->Color(this->led->WHITE);
         rtc_gpio_set_level((gpio_num_t)pin_regulator_enable, 0);
         delay(60000);
       }
+      this->led->Color(this->led->BLACK);
     }
-
   private:
     bool enableSleep = false;
     bool wakeupByButton = false;

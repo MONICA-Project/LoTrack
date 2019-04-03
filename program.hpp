@@ -29,11 +29,11 @@ class Program {
       this->s = new RXTX();
       this->led = new ledclass();
       this->sleep = new sleepclass(this->led);
-      this->batt = new battclass();
       this->wlan = new wlanclass(new oledclass());
       this->aOTA = new otaclass(this->wlan, this->led);
       this->gps = new gpsclass(this->wlan);
       this->storage = new Storage();
+      this->batt = new battclass(this->storage);
       this->lora = new loraclass(this->wlan, this->storage);
     }
 
@@ -108,7 +108,7 @@ class Program {
       this->sleep->TimerSleep();
     }
   private:
-    const uint8_t version = 12;
+    const uint8_t version = 13;
     /**
      * 1 Refactoring and Send networksettings over lora
      * 2 Sleepmode and Powersaving implemented
@@ -122,6 +122,7 @@ class Program {
      * 10 When Shutting down the Device, Send a Lora Status message. Send Panic Message 3 Times with different SF Settings
      * 11 OTA Update now in mainthread because of stacksize to small in pthread and displaying the MAC address in the serial log
      * 12 Add a primitive mutex, so that an corrupted esp not create tons of button threads and the controller crashs, also change led behavour
+     * 13 Add internal programmable offset for Battery
      */
     RXTX * s;
     otaclass * aOTA;
@@ -198,8 +199,10 @@ class Program {
                   p->storage->WriteOffsetFreq(freq);
                   p->wlan->Log("Reset ESP!\n");
                   ESP.restart();
-                }
-                else {
+                } else if (r.equals("Q")) {
+                  p->wlan->Log("Reset ESP!\n");
+                  ESP.restart();
+                } else {
                   int32_t l = r.toInt();
                   if (l != 0) {
                     freq = l;
@@ -209,6 +212,34 @@ class Program {
                 }
               }
               p->lora->DebugSend();
+              delay(1000);
+            }
+          } else if (command.equal("BATT")) {
+            float_t batt = p->storage->ReadBatteryOffset();
+            p->wlan->Log("Battery offset now: " + String(batt,2) + "\n");
+            p->wlan->Log("Usage for Battery offset Mode:\n");
+            p->wlan->Log("S for Save and Reset, Q for Quit and not Save!\n");
+            p->wlan->Log("Any singed float for tuning: eg. -0.42 or 0.1337\n");
+            while (true) {
+              if (p->wlan->ServerHasData()) {
+                String r = p->wlan->GetLastString();
+                if (r.equals("S")) {
+                  p->wlan->Log("Save " + String(batt, 2) + " as new offset!\n");
+                  p->storage->WriteBatteryOffset(batt);
+                  p->wlan->Log("Reset ESP!\n");
+                  ESP.restart();
+                } else if (r.equals("Q")) {
+                  p->wlan->Log("Reset ESP!\n");
+                  ESP.restart();
+                } else {
+                  float_t l = r.toFloat();
+                  if (l != 0) {
+                    batt = l;
+                    p->wlan->Log("Offset: " + String(batt, 2) + "\n");
+                    p->batt->SetOffset(batt);
+                  }
+                }
+              }
               delay(1000);
             }
           }
