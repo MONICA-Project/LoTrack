@@ -1,7 +1,5 @@
 //////// V1 //////////////////////
-namespace {
-  // ESP-Name
-  extern char const esp_name[] = "A";
+/*namespace {
   // Wifi-Settings
   extern char const wifissid[] = "IoT";
   extern char const wifipsk[] = "";
@@ -23,7 +21,8 @@ namespace {
   extern int const pin_enable_gnss = 0;
   extern bool const print_gps_on_serialport = true;
   // Lora-Settings
-  extern long const lora_band = ((esp_name[0] % 8) * 250000) + 866750000;
+  extern long const lora_baseband = 866750000;
+  extern long const lora_channeloffset = 250000;
   extern bool const listenbeforetalk = false;
   extern bool const lora_send_binary = true;
   extern int const pin_lora_miso = 19;
@@ -34,12 +33,10 @@ namespace {
   extern int const pin_lora_di0 = 26;
   // Battery-Settings
   extern int const pin_batt = 0;
-}
+}//*/
 
 //////////// V2 ////////////////////////
-namespace {
-  // ESP-Name
-  extern char const esp_name[] = "A";
+/*namespace {
   // Wifi-Settings
   extern char const wifissid[] = "IoT";
   extern char const wifipsk[] = "";
@@ -61,7 +58,8 @@ namespace {
   extern int const pin_enable_gnss = 0;
   extern bool const print_gps_on_serialport = true;
   // Lora-Settings
-  extern long const lora_band = ((esp_name[0] % 8) * 250000) + 866750000;
+  extern long const lora_baseband = 866750000;
+  extern long const lora_channeloffset = 250000;
   extern bool const listenbeforetalk = false;
   extern bool const lora_send_binary = true;
   extern int const pin_lora_miso = 19;
@@ -72,12 +70,10 @@ namespace {
   extern int const pin_lora_di0 = 26;
   // Battery-Settings
   extern int const pin_batt = 0;
-}
+}//*/
 
 ////////////// V3-A Only //////////////////////
-namespace {
-  // ESP-Name
-  extern char const esp_name[] = "A";
+/*namespace {
   // Wifi-Settings
   extern char const wifissid[] = "IoT";
   extern char const wifipsk[] = "";
@@ -99,7 +95,8 @@ namespace {
   extern int const pin_enable_gnss = 0;
   extern bool const print_gps_on_serialport = false;
   // Lora-Settings
-  extern long const lora_band = ((esp_name[0] % 8) * 250000) + 866750000;
+  extern long const lora_baseband = 866750000;
+  extern long const lora_channeloffset = 250000;
   extern bool const listenbeforetalk = false;
   extern bool const lora_send_binary = true;
   extern int const pin_lora_miso = 19;
@@ -110,12 +107,10 @@ namespace {
   extern int const pin_lora_di0 = 36;
   // Battery-Settings
   extern int const pin_batt = 35;
-}
+}//*/
 
 ////////////// V3 ///////////////////
-namespace {
-  // ESP-Name
-  extern char const esp_name[] = "B";
+/*namespace {
   // Wifi-Settings
   extern char const wifissid[] = "IoT";
   extern char const wifipsk[] = "";
@@ -137,7 +132,8 @@ namespace {
   extern int const pin_enable_gnss = 0;
   extern bool const print_gps_on_serialport = false;
   // Lora-Settings
-  extern long const lora_band = ((esp_name[0] % 8) * 250000) + 866750000;
+  extern long const lora_baseband = 866750000;
+  extern long const lora_channeloffset = 250000;
   extern bool const listenbeforetalk = false;
   extern bool const lora_send_binary = true;
   extern int const pin_lora_miso = 19;
@@ -148,12 +144,10 @@ namespace {
   extern int const pin_lora_di0 = 36;
   // Battery-Settings
   extern int const pin_batt = 35;
-}
+}//*/
 
 ////////////// V4 ///////////////////
-namespace {
-  // ESP-Name
-  extern char const esp_name[] = "Q";
+/*namespace {
   // Wifi-Settings
   extern char const wifissid[] = "IoT";
   extern char const wifipsk[] = "";
@@ -175,7 +169,8 @@ namespace {
   extern int const pin_enable_gnss = 17;
   extern bool const print_gps_on_serialport = false;
   // Lora-Settings
-  extern long const lora_band = ((esp_name[0] % 8) * 250000) + 866750000;
+  extern long const lora_baseband = 866750000;
+  extern long const lora_channeloffset = 250000;
   extern bool const listenbeforetalk = false;
   extern bool const lora_send_binary = true;
   extern int const pin_lora_miso = 19;
@@ -186,4 +181,4 @@ namespace {
   extern int const pin_lora_di0 = 34;
   // Battery-Settings
   extern int const pin_batt = 35;
-}
+}//*/

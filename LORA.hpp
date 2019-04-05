@@ -20,11 +20,12 @@
 /// <typeparam name="pin_ss">Pin number of CS pin on the controller</typeparam>
 /// <typeparam name="pin_rst">Pin number of the controller pin where the resetpin is attached</typeparam>
 /// <typeparam name="pin_dio">Pin number of the controller pin where the data in 0 is attached</typeparam>
-/// <typeparam name="band">Hz of the sending frequency</typeparam>
+/// <typeparam name="baseband">Frequency of the lowest frequenc for each devices</typeparam>
+/// <typeparam name="channeloffset">offset between every channel frequency</typeparam>
 /// <typeparam name="espname">String of the node name</typeparam>
 /// <typeparam name="lbt">(listen before talk) if true, this class will wait and listen to the LORA module before send, otherwise it will send directly</typeparam>
 /// <typeparam name="binary">if true, the data will packed into a short binary message, otherwise it will send as long plain text.</typeparam>
-template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long band, const char* espname, bool lbt, bool binary>
+template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long baseband, long channeloffset, bool lbt, bool binary>
 class LORA {
   public:
     /// <summary>Constructor for LORA class, setup the io pins</summary>
@@ -41,7 +42,7 @@ class LORA {
     /// <summary>Setup the LORA settings and start the module</summary>
     void Begin() {
       this->wlan->Box("Setup Lora!", 80);
-      if (!this->lora->begin (band + this->storage->ReadOffsetFreq())) {
+      if (!this->lora->begin (this->CalculateFrequency() + this->storage->GetFreqoffset())) {
         this->wlan->Box("Lora Failed!", 90);
       } else {
         this->lora->setSignalBandwidth(125000);
@@ -63,7 +64,7 @@ class LORA {
     /// <summary>Set an offset to the center frequency</summary>
     /// <typeparam name="o">Frequency offset in Hz</typeparam>
     void SetFreqOffset(int32_t o) {
-      this->lora->setFrequency(band + o);
+      this->lora->setFrequency(this->CalculateFrequency() + o);
     }
 
     /// <summary>Send TEST TEST TEST over lora</summary>
@@ -143,8 +144,8 @@ class LORA {
         lora_data[0] = 'b';
         }
         for(uint8_t i = 0; i < 2; i++) {
-        if(strlen(espname) > i) {
-          lora_data[i + 1] = esp_name[i];
+        if(this->storage->GetEspname().length() > i) {
+          lora_data[i + 1] = this->storage->GetEspname().charAt(i);
         } else {
           lora_data[i + 1] = 0;
         }
@@ -166,7 +167,7 @@ class LORA {
         }
       } else {
         //Gps 9+9+7+5+4 = 34 Char
-        this->Send(String(espname) + "\n" + String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2));
+        this->Send(this->storage->GetEspname() + "\n" + String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2));
       }
     }
 
@@ -179,9 +180,15 @@ class LORA {
     /// <typeparam name="freqoffset">currently used frequency offset</typeparam>
     /// <typeparam name="runningStatus">0 = for Shutdown node now, 1 = normal Statup (wifi on, no sleeping), 2 = Powersafe mode</typeparam>
     void Send(uint8_t version, String ip, String ssid, bool wififlag, float battery, int32_t freqoffset, uint8_t runningStatus) {
-      this->Send("deb\n" + String(espname) + "\n" + String(version) + "," + ip + "," + ssid + "," + (wififlag ? "t" : "f") + "," + String(battery, 2) + "," + String(freqoffset)+","+String(runningStatus));
+      this->Send("deb\n" + this->storage->GetEspname() + "\n" + String(version) + "," + ip + "," + ssid + "," + (wififlag ? "t" : "f") + "," + String(battery, 2) + "," + String(freqoffset)+","+String(runningStatus));
     }
     #pragma endregion
+
+    /// <summary>Calculate the device frequency from the first letter of the name of the device</summary>
+    /// <returns>return the frequency in hz</returns>
+    uint32_t CalculateFrequency() {
+      return ((this->storage->GetEspname().charAt(0) % 8) * channeloffset) + baseband;
+    }
   private:
     wlanclass * wlan;
     LoRaClass * lora;

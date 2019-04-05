@@ -8,13 +8,12 @@ typedef LED<pin_ledr, pin_ledg, pin_ledb> ledclass;
 #include "OLED.hpp"
 typedef OLED<pin_oled_sda, pin_oled_scl, pin_oled_pwr> oledclass;
 #include "WLAN.hpp"
-typedef WLAN<wifissid, wifipsk, esp_name, 2, 23, print_over_serialport> wlanclass;
+typedef WLAN<wifissid, wifipsk, 2, 23, print_over_serialport> wlanclass;
 #include "OTA.hpp"
-typedef OTA<esp_name> otaclass;
 #include "GPS.hpp"
 typedef GPS<pin_gps_tx, pin_gps_rx, pin_enable_gnss, print_gps_on_serialport> gpsclass;
 #include "LORA.hpp"
-typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_band, esp_name, listenbeforetalk, lora_send_binary> loraclass;
+typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_baseband, lora_channeloffset, listenbeforetalk, lora_send_binary> loraclass;
 #include "BATTERY.hpp"
 typedef Battery<pin_batt> battclass;
 #include "SLEEP.hpp"
@@ -29,10 +28,10 @@ class Program {
       this->s = new RXTX();
       this->led = new ledclass();
       this->sleep = new sleepclass(this->led);
-      this->wlan = new wlanclass(new oledclass());
-      this->aOTA = new otaclass(this->wlan, this->led);
-      this->gps = new gpsclass(this->wlan);
       this->storage = new Storage();
+      this->wlan = new wlanclass(new oledclass(), this->storage);
+      this->aOTA = new OTA(this->wlan, this->led, this->storage);
+      this->gps = new gpsclass(this->wlan);
       this->batt = new battclass(this->storage);
       this->lora = new loraclass(this->wlan, this->storage);
     }
@@ -41,6 +40,7 @@ class Program {
     void Begin() {
       this->led->Color(this->led->RED);
       uint8_t sleepReason = this->sleep->GetWakeupReason();
+      this->storage->Begin();
       this->wlan->Begin();
       if(sleepReason == 0) {
         this->wlan->Connect();
@@ -49,7 +49,6 @@ class Program {
         this->wlan->Stop();
       }
       this->gps->Begin();
-      this->storage->Begin();
       this->lora->Begin();
       this->batt->Begin();
       pthread_mutex_init(&this->sleep->MutexSleep, NULL);
@@ -78,7 +77,7 @@ class Program {
     void Loop() {
       if(this->sendStartupInfos) {
         this->sendStartupInfos = false;
-        this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->ReadOffsetFreq(), 1);
+        this->lora->Send(this->version, this->wlan->GetIp(), this->wlan->GetSsid(), this->wlan->GetStatus(), this->batt->GetBattery(), this->storage->GetFreqoffset(), 1);
       }
       if(this->loopThread) {
         if(this->wlan->GetStatus()) {
@@ -109,7 +108,7 @@ class Program {
       this->sleep->TimerSleep();
     }
   private:
-    const uint8_t version = 13;
+    const uint8_t version = 14;
     /**
      * 1 Refactoring and Send networksettings over lora
      * 2 Sleepmode and Powersaving implemented
@@ -124,9 +123,10 @@ class Program {
      * 11 OTA Update now in mainthread because of stacksize to small in pthread and displaying the MAC address in the serial log
      * 12 Add a primitive mutex, so that an corrupted esp not create tons of button threads and the controller crashs, also change led behavour
      * 13 Add internal programmable offset for Battery
+     * 14 Add internal programmable name of device, so every device not need its own compiled file
      */
     RXTX * s;
-    otaclass * aOTA;
+    OTA * aOTA;
     gpsclass * gps;
     wlanclass * wlan;
     loraclass * lora;
@@ -185,8 +185,8 @@ class Program {
             while (!p->dispThreadStopped || !p->loopThreadStopped || !p->gpsThreadStopped) {
               delay(1000);
             }
-            int32_t freq = p->storage->ReadOffsetFreq();
-            p->wlan->Log("Target frequency is: " + String(lora_band) + "\n");
+            int32_t freq = p->storage->GetFreqoffset();
+            p->wlan->Log("Target frequency is: " + String(p->lora->CalculateFrequency()) + "\n");
             p->wlan->Log("Frequency offset now: " + String(freq) + "\n");
             p->wlan->Log("Usage for Frequency offset Mode:\n");
             p->wlan->Log("S for Save and Reset, Switch off for not Save!\n");
@@ -197,7 +197,7 @@ class Program {
                 String r = p->wlan->GetLastString();
                 if (r.equals("S")) {
                   p->wlan->Log("Save " + String(freq) + " as new offset!\n");
-                  p->storage->WriteOffsetFreq(freq);
+                  p->storage->SetFreqoffset(freq);
                   p->wlan->Log("Reset ESP!\n");
                   ESP.restart();
                 } else if (r.equals("Q")) {
@@ -216,7 +216,7 @@ class Program {
               delay(1000);
             }
           } else if (command.equals("BATT")) {
-            float_t batt = p->storage->ReadBatteryOffset();
+            float_t batt = p->storage->GetBattoffset();
             p->wlan->Log("Battery offset now: " + String(batt,2) + "\n");
             p->wlan->Log("Usage for Battery offset Mode:\n");
             p->wlan->Log("S for Save and Reset, Q for Quit and not Save!\n");
@@ -226,7 +226,7 @@ class Program {
                 String r = p->wlan->GetLastString();
                 if (r.equals("S")) {
                   p->wlan->Log("Save " + String(batt, 2) + " as new offset!\n");
-                  p->storage->WriteBatteryOffset(batt);
+                  p->storage->SetBattoffset(batt);
                   p->wlan->Log("Reset ESP!\n");
                   ESP.restart();
                 } else if (r.equals("Q")) {
@@ -243,6 +243,42 @@ class Program {
               }
               delay(1000);
             }
+          } else if (command.equals("NAME")) {
+            p->wlan->Log("Stopping all other Threads!\n");
+            p->gps->Stop();
+            p->dispThread = false;
+            p->loopThread = false;
+            while (!p->dispThreadStopped || !p->loopThreadStopped || !p->gpsThreadStopped) {
+              delay(1000);
+            }
+            String name = p->storage->GetEspname();
+            p->wlan->Log("Name is now: " + name + "\n");
+            p->wlan->Log("Usage for Name set Mode:\n");
+            p->wlan->Log("s for Save and Reset, q for Quit and not Save!\n");
+            p->wlan->Log("Any one or two uppercase chars for setting: eg. C or ED\n");
+            while (true) {
+              if (p->wlan->ServerHasData()) {
+                String r = p->wlan->GetLastString();
+                if (r.equals("s")) {
+                  p->wlan->Log("Save " + name + " as new name!\n");
+                  p->storage->SetEspname(name);
+                  p->wlan->Log("Reset ESP!\n");
+                  ESP.restart();
+                }
+                else if (r.equals("q")) {
+                  p->wlan->Log("Reset ESP!\n");
+                  ESP.restart();
+                }
+                else {
+                  String n = r;
+                  if (n.length() == 1 || n.length() == 2) {
+                    name = n;
+                    p->wlan->Log("Name: " + name + "\n");
+                  }
+                }
+              }
+              delay(1000);
+            }
           }
         }
         if (count > 600) {
@@ -254,7 +290,7 @@ class Program {
             loop = false;
             p->wlan->Stop();
             p->dispThread = false;
-            p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->ReadOffsetFreq(), 2);
+            p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->GetFreqoffset(), 2);
             p->sleep->EnableSleep();
           }
           count = 0;
@@ -311,7 +347,7 @@ class Program {
       uint8_t task = p->sleep->GetButtonMode();
       if (task == 2) {
         p->wlan->Log(String("SHUTDOWN!\n"));
-        p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->ReadOffsetFreq(), 0);
+        p->lora->Send(p->version, p->wlan->GetIp(), p->wlan->GetSsid(), p->wlan->GetStatus(), p->batt->GetBattery(), p->storage->GetFreqoffset(), 0);
         p->sleep->Shutdown();
       }
       if (task == 1) {

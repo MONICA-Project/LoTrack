@@ -11,37 +11,61 @@ class Storage {
     /// <summary>Start Storage, init variables if there not set yet</summary>
     void Begin() {
       this->preferences->begin("finetune", false);
-      if(this->preferences->getLong("finetune", -2147483648) == -2147483648) {
-        this->preferences->putLong("finetune", 0);
+      this->freqoffset = this->preferences->getLong("finetune", -2147483648);
+      this->battoffset = this->preferences->getFloat("batteryoffset", -1234);
+      this->espname = this->preferences->getString("espname", String(""));
+      if(this->freqoffset == -2147483648) {
+        this->SetFreqoffset(0);
       }
-      if (this->preferences->getFloat("batteryoffset", -1234) == -1234) {
-        this->preferences->putFloat("batteryoffset", 0);
+      if (this->battoffset == -1234) {
+        this->SetBattoffset(0);
+      }
+      if (this->espname.equals("")) {
+        this->SetEspname(String("xx"));
       }
     }
 
     /// <summary>Get the frequency offset value</summary>
     /// <returns>return the offset in hz</returns>
-    int32_t ReadOffsetFreq() {
-      return this->preferences->getLong("finetune", 0);
+    int32_t GetFreqoffset() {
+      return this->freqoffset;
     }
 
     /// <summary>Get the battery offset value</summary>
     /// <returns>return the offset in volt</returns>
-    float_t ReadBatteryOffset() {
-      return this->preferences->getFloat("batteryoffset", 0);
+    float_t GetBattoffset() {
+      return this->battoffset;
+    }
+
+    /// <summary>Get the espname</summary>
+    /// <returns>return the name as string</returns>
+    String GetEspname() {
+      return this->espname;
     }
 
     /// <summary>Set the frequency offset</summary>
     /// <typeparam name="o">Value in hz as offset</typeparam>
-    void WriteOffsetFreq(int32_t o) {
+    void SetFreqoffset(int32_t o) {
       this->preferences->putLong("finetune", o);
+      this->freqoffset = o;
     }
 
     /// <summary>Set the battery offset</summary>
     /// <typeparam name="o">value in volt as offset</typeparam>
-    void WriteBatteryOffset(float_t o) {
+    void SetBattoffset(float_t o) {
       this->preferences->putFloat("batteryoffset", o);
+      this->battoffset = o;
+    }
+
+    /// <summary>Set the espname</summary>
+    /// <typeparam name="o">value name as string</typeparam>
+    void SetEspname(String o) {
+      this->preferences->putString("espname", o);
+      this->espname = o;
     }
   private:
     Preferences * preferences = NULL;
+    int32_t freqoffset = 0;
+    float_t battoffset = 0.0;
+    String espname;
 };

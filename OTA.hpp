@@ -4,8 +4,6 @@
 /// <summary>
 /// Class to handle Over The Air updates
 /// </summary>
-/// <typeparam name="espname">String of the name of the module</typeparam>
-template<const char* espname>
 class OTA {
   public:
     /// <summary>Indikates if an update was started</summary>
@@ -14,9 +12,11 @@ class OTA {
     /// <summary>Constructor for OTA Class</summary>
     /// <typeparam name="wlanclass">Instance of the wlanclass, to print debug messages</typeparam>
     /// <typeparam name="ledclass">Instance of the ledclass, to blink the LED</typeparam>
-    OTA(wlanclass* wlanclass, ledclass * ledclass) {
+    /// <typeparam name="ledclass">Instance of the storageclass, to load the espname</typeparam>
+    OTA(wlanclass* wlanclass, ledclass * ledclass, Storage * storage) {
       this->wlan = wlanclass;
       this->led = ledclass;
+      this->storage = storage;
       this->otaClass = new ArduinoOTAClass();
     }
 
@@ -27,7 +27,7 @@ class OTA {
       this->OnEnd();
       this->OnProgress();
       this->OnError();
-      this->otaClass->setHostname(espname);
+      this->otaClass->setHostname(this->storage->GetEspname().c_str());
       this->otaClass->begin();
       this->wlan->Box("OTA Successfull", 50);
     }
@@ -39,6 +39,7 @@ class OTA {
   private:
     wlanclass * wlan;
     ledclass * led;
+    Storage * storage;
     uint32_t blink;
     ArduinoOTAClass * otaClass = NULL;
 

@@ -2,11 +2,12 @@
 #include <WiFiServer.h>
 #include <mutex>
 
-template<const char* ssid, const char* psk_key, const char* espname, int server_clients, int server_port, bool debug>
+template<const char* ssid, const char* psk_key, int server_clients, int server_port, bool debug>
 class WLAN {
   public:
-    WLAN(oledclass* disp) {
+    WLAN(oledclass* disp, Storage * storage) {
       this->oled = disp;
+      this->storage = storage;
     }
 
     #pragma region Start and Stop
@@ -17,7 +18,7 @@ class WLAN {
     void Connect() {
       this->Box("Setup Wifi!", 20);
       this->w->mode(WIFI_STA);
-      this->w->setHostname(espname);
+      this->w->setHostname(this->storage->GetEspname().c_str());
       this->Log(String("MAC: ") + this->w->macAddress() + String("\n"));
       this->w->begin(ssid, psk_key);
       if(this->w->waitForConnectResult() != WL_CONNECTED) {
@@ -66,14 +67,14 @@ class WLAN {
             }
             this->serverClients[i] = this->s->available();
             this->clients++;
-            this->serverClients[i].print(String("Hello on the Telnet of ") + String(espname) + String("\r\n"));
+            this->serverClients[i].print(String("Hello on the Telnet of ") + this->storage->GetEspname() + String("\r\n"));
             this->Log(String("New Client: ") + String(i) + String("\n"));
             break;
           }
         }
         if(i == server_clients) {
           WiFiClient cl = this->s->available();
-          cl.print(String("Hello on the Telnet of ") + String(espname) + String("\r\nYou will be kicked\r\n"));
+          cl.print(String("Hello on the Telnet of ") + this->storage->GetEspname() + String("\r\nYou will be kicked\r\n"));
           cl.stop();
           this->Log("Connection rejected\n");
         }
@@ -179,6 +180,7 @@ class WLAN {
     bool _server_connected = false;
     WiFiClient serverClients[server_clients];
     oledclass* oled;
+    Storage * storage;
     uint8_t clients = 0;
     String serverClientsData[server_clients];
     String last_data;

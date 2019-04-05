@@ -14,7 +14,7 @@ class Battery {
 
     /// <summary>Begin Battery, Readout the offset</summary>
     void Begin() {
-      this->batteryoffset = this->storage->ReadBatteryOffset();
+      this->batteryoffset = this->storage->GetBattoffset();
     }
 
     /// <summary>Get the voltage of the battery</summary>
