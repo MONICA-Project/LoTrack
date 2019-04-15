@@ -1,8 +1,8 @@
 //////// V1 //////////////////////
 /*namespace {
   // Wifi-Settings
-  extern char const wifissid[] = "IoT";
-  extern char const wifipsk[] = "";
+  extern char const wifissid[] = "Monica-IoT";
+  extern char const wifipsk[] = "monicarules";
   extern bool const print_over_serialport = false;
   // Power/Button Settings
   extern int const pin_regulator_enable = 0;
@@ -38,8 +38,8 @@
 //////////// V2 ////////////////////////
 /*namespace {
   // Wifi-Settings
-  extern char const wifissid[] = "IoT";
-  extern char const wifipsk[] = "";
+  extern char const wifissid[] = "Monica-IoT";
+  extern char const wifipsk[] = "monicarules";
   extern bool const print_over_serialport = false;
   // Power/Button Settings
   extern int const pin_regulator_enable = 0;
@@ -75,8 +75,8 @@
 ////////////// V3-A Only //////////////////////
 /*namespace {
   // Wifi-Settings
-  extern char const wifissid[] = "IoT";
-  extern char const wifipsk[] = "";
+  extern char const wifissid[] = "Monica-IoT";
+  extern char const wifipsk[] = "monicarules";
   extern bool const print_over_serialport = true;
   // Power/Button Settings
   extern int const pin_regulator_enable = 0;
@@ -112,8 +112,8 @@
 ////////////// V3 ///////////////////
 /*namespace {
   // Wifi-Settings
-  extern char const wifissid[] = "IoT";
-  extern char const wifipsk[] = "";
+  extern char const wifissid[] = "Monica-IoT";
+  extern char const wifipsk[] = "monicarules";
   extern bool const print_over_serialport = true;
   // Power/Button Settings
   extern int const pin_regulator_enable = 0;
@@ -149,8 +149,8 @@
 ////////////// V4 ///////////////////
 /*namespace {
   // Wifi-Settings
-  extern char const wifissid[] = "IoT";
-  extern char const wifipsk[] = "";
+  extern char const wifissid[] = "Monica-IoT";
+  extern char const wifipsk[] = "monicarules";
   extern bool const print_over_serialport = true;
   // Power/Button Settings
   extern int const pin_regulator_enable = 25;
