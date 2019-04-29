@@ -97,6 +97,25 @@ class Sleep {
       }
       this->led->Color(this->led->BLACK);
     }
+
+    ///<summary>Wait a Random Time (0, 350 or 700ms)</summary>
+    void WaitRandom() {
+      uint8_t waiting = random(0, 2);
+      if(waiting == 1) {
+        delay(350);
+      } else if(waiting == 2) {
+        delay(700);
+      }
+    }
+    
+    ///<summary>Set three Bytes as Entropy for PRNG</summary>
+    /// <typeparam name="r1">first byte entropy</typeparam>
+    /// <typeparam name="r2">second byte entropy</typeparam>
+    /// <typeparam name="r3">third byte entropy</typeparam>
+    void SetEntropy(uint8_t r1, uint8_t r2, uint8_t r3) {
+      uint8_t rand[] = { r1, r2, r3 };
+      esp_fill_random(rand, 3);
+    }
   private:
     bool enableSleep = false;
     bool wakeupByButton = false;

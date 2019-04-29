@@ -89,6 +89,8 @@ class Program {
         pthread_mutex_lock(&this->mutexDisplay);
         pthread_mutex_lock(&this->gps->MutexGps);
         gpsInfoField g = this->gps->GetGPSData();
+        this->sleep->SetEntropy(this->lora->GetRandom(), this->lora->GetRandom(), this->lora->GetRandom());
+        this->sleep->WaitRandom();
         this->lora->Send(g, this->batt->GetBattery());
         if(g.fix) {
           this->led->Blink(this->led->YELLOW);
@@ -108,7 +110,7 @@ class Program {
       this->sleep->TimerSleep();
     }
   private:
-    const uint8_t version = 14;
+    const uint8_t version = 15;
     /**
      * 1 Refactoring and Send networksettings over lora
      * 2 Sleepmode and Powersaving implemented
@@ -124,6 +126,7 @@ class Program {
      * 12 Add a primitive mutex, so that an corrupted esp not create tons of button threads and the controller crashs, also change led behavour
      * 13 Add internal programmable offset for Battery
      * 14 Add internal programmable name of device, so every device not need its own compiled file
+     * 15 Add a random timesleep before sending lora, so that all devices not sending exactly the to the same time.
      */
     RXTX * s;
     OTA * aOTA;

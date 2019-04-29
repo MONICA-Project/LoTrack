@@ -189,6 +189,12 @@ class LORA {
     uint32_t CalculateFrequency() {
       return ((this->storage->GetEspname().charAt(0) % 8) * channeloffset) + baseband;
     }
+
+    ///<summaryGet a Random Byte from Lora Device</summary>
+    ///<returns>a random byte</returns>
+    uint8_t GetRandom() {
+      return this->lora->random();
+    }
   private:
     wlanclass * wlan;
     LoRaClass * lora;

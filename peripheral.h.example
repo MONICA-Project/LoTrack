@@ -72,7 +72,7 @@
   extern int const pin_batt = 0;
 }//*/
 
-////////////// V3-A Only //////////////////////
+////////////// V3-EB Only //////////////////////
 /*namespace {
   // Wifi-Settings
   extern char const wifissid[] = "Monica-IoT";
