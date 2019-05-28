@@ -1,0 +1,184 @@
+//////// V1 //////////////////////
+/*namespace {
+  // Wifi-Settings
+  extern char const wifissid[] = "Monica-IoT";
+  extern char const wifipsk[] = "monicarules";
+  extern bool const print_over_serialport = false;
+  // Power/Button Settings
+  extern int const pin_regulator_enable = 0;
+  extern int const pin_button = 0;
+  // LED-Settings
+  extern int const pin_ledr = 2;
+  extern int const pin_ledg = 0;
+  extern int const pin_ledb = 0;
+  // Display-Settings
+  extern int const pin_oled_sda = 4;
+  extern int const pin_oled_scl = 15;
+  extern int const pin_oled_pwr = 16;
+  // GPS-Settings
+  extern int const pin_gps_tx = 22;
+  extern int const pin_gps_rx = 23;
+  extern int const pin_enable_gnss = 0;
+  extern bool const print_gps_on_serialport = true;
+  // Lora-Settings
+  extern long const lora_baseband = 866750000;
+  extern long const lora_channeloffset = 250000;
+  extern bool const listenbeforetalk = false;
+  extern bool const lora_send_binary = true;
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 27;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 18;
+  extern int const pin_lora_rst = 14;
+  extern int const pin_lora_di0 = 26;
+  // Battery-Settings
+  extern int const pin_batt = 0;
+}//*/
+
+//////////// V2 ////////////////////////
+/*namespace {
+  // Wifi-Settings
+  extern char const wifissid[] = "Monica-IoT";
+  extern char const wifipsk[] = "monicarules";
+  extern bool const print_over_serialport = false;
+  // Power/Button Settings
+  extern int const pin_regulator_enable = 0;
+  extern int const pin_button = 0;
+  // LED-Settings
+  extern int const pin_ledr = 2;
+  extern int const pin_ledg = 0;
+  extern int const pin_ledb = 0;
+  // Display-Settings
+  extern int const pin_oled_sda = 21;
+  extern int const pin_oled_scl = 22;
+  extern int const pin_oled_pwr = 16;
+  // GPS-Settings
+  extern int const pin_gps_tx = 34;
+  extern int const pin_gps_rx = 35;
+  extern int const pin_enable_gnss = 0;
+  extern bool const print_gps_on_serialport = true;
+  // Lora-Settings
+  extern long const lora_baseband = 866750000;
+  extern long const lora_channeloffset = 250000;
+  extern bool const listenbeforetalk = false;
+  extern bool const lora_send_binary = true;
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 27;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 18;
+  extern int const pin_lora_rst = 14;
+  extern int const pin_lora_di0 = 26;
+  // Battery-Settings
+  extern int const pin_batt = 0;
+}//*/
+
+////////////// V3-EB Only //////////////////////
+/*namespace {
+  // Wifi-Settings
+  extern char const wifissid[] = "Monica-IoT";
+  extern char const wifipsk[] = "monicarules";
+  extern bool const print_over_serialport = true;
+  // Power/Button Settings
+  extern int const pin_regulator_enable = 0;
+  extern int const pin_button = 0;
+  // LED-Settings
+  extern int const pin_ledr = 13;
+  extern int const pin_ledg = 0;
+  extern int const pin_ledb = 0;
+  // Display-Settings
+  extern int const pin_oled_sda = 0;
+  extern int const pin_oled_scl = 0;
+  extern int const pin_oled_pwr = 0;
+  // GPS-Settings
+  extern int const pin_gps_tx = 27;
+  extern int const pin_gps_rx = 34;
+  extern int const pin_enable_gnss = 0;
+  extern bool const print_gps_on_serialport = false;
+  // Lora-Settings
+  extern long const lora_baseband = 866750000;
+  extern long const lora_channeloffset = 250000;
+  extern bool const listenbeforetalk = false;
+  extern bool const lora_send_binary = true;
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 18;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 21;
+  extern int const pin_lora_rst = 4;
+  extern int const pin_lora_di0 = 36;
+  // Battery-Settings
+  extern int const pin_batt = 35;
+}//*/
+
+////////////// V3 ///////////////////
+/*namespace {
+  // Wifi-Settings
+  extern char const wifissid[] = "Monica-IoT";
+  extern char const wifipsk[] = "monicarules";
+  extern bool const print_over_serialport = true;
+  // Power/Button Settings
+  extern int const pin_regulator_enable = 0;
+  extern int const pin_button = 0;
+  // LED-Settings
+  extern int const pin_ledr = 13;
+  extern int const pin_ledg = 0;
+  extern int const pin_ledb = 0;
+  // Display-Settings
+  extern int const pin_oled_sda = 0;
+  extern int const pin_oled_scl = 0;
+  extern int const pin_oled_pwr = 0;
+  // GPS-Settings
+  extern int const pin_gps_tx = 39;
+  extern int const pin_gps_rx = 34;
+  extern int const pin_enable_gnss = 0;
+  extern bool const print_gps_on_serialport = false;
+  // Lora-Settings
+  extern long const lora_baseband = 866750000;
+  extern long const lora_channeloffset = 250000;
+  extern bool const listenbeforetalk = false;
+  extern bool const lora_send_binary = true;
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 18;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 4;
+  extern int const pin_lora_rst = 21;
+  extern int const pin_lora_di0 = 36;
+  // Battery-Settings
+  extern int const pin_batt = 35;
+}//*/
+
+////////////// V4 ///////////////////
+/*namespace {
+  // Wifi-Settings
+  extern char const wifissid[] = "Monica-IoT";
+  extern char const wifipsk[] = "monicarules";
+  extern bool const print_over_serialport = true;
+  // Power/Button Settings
+  extern int const pin_regulator_enable = 25;
+  extern int const pin_button = 13;
+  // LED-Settings
+  extern int const pin_ledr = 27;
+  extern int const pin_ledg = 0;
+  extern int const pin_ledb = 0;
+  // Display-Settings
+  extern int const pin_oled_sda = 0;
+  extern int const pin_oled_scl = 0;
+  extern int const pin_oled_pwr = 0;
+  // GPS-Settings
+  extern int const pin_gps_tx = 33;
+  extern int const pin_gps_rx = 32;
+  extern int const pin_enable_gnss = 17;
+  extern bool const print_gps_on_serialport = false;
+  // Lora-Settings
+  extern long const lora_baseband = 866750000;
+  extern long const lora_channeloffset = 250000;
+  extern bool const listenbeforetalk = false;
+  extern bool const lora_send_binary = true;
+  extern int const pin_lora_miso = 19;
+  extern int const pin_lora_mosi = 18;
+  extern int const pin_lora_sck = 5;
+  extern int const pin_lora_ss = 4;
+  extern int const pin_lora_rst = 21;
+  extern int const pin_lora_di0 = 34;
+  // Battery-Settings
+  extern int const pin_batt = 35;
+}//*/
