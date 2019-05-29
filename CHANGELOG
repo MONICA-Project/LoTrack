@@ -1,0 +1,17 @@
+Versionshistory of Lora-Tracker
+
+1 Refactoring and Send networksettings over lora
+2 Sleepmode and Powersaving implemented
+3 Add height to Lora transmission
+4 Looking if Lorachannel is free (ListenBeforeTalk)
+5 Option for LBT, also 5s sleep time, CR to 5, SF to 9 and BW to 125000, fixing a parsing bug for GPS, change the Transmitpower to 20
+6 Create new Binary Version
+7 Added GNSS_Enable Pin, RGB LED Support
+8 Added Device_Enable Pin
+9 Added Button support for shutting down the device on long press, also for short press sending the location as emergency
+10 When Shutting down the Device, Send a Lora Status message. Send Panic Message 3 Times with different SF Settings
+11 OTA Update now in mainthread because of stacksize to small in pthread and displaying the MAC address in the serial log
+12 Add a primitive mutex, so that an corrupted esp not create tons of button threads and the controller crashs, also change led behavour
+13 Add internal programmable offset for Battery
+14 Add internal programmable name of device, so every device not need its own compiled file
+15 Add a random timesleep before sending lora, so that all devices not sending exactly the to the same time.
