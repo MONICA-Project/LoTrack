@@ -1,3 +1,9 @@
+#ifndef _LORA_HPP_INCLUDED
+#define _LORA_HPP_INCLUDED
+
+#include "WLAN.hpp"
+#include "STORAGE.hpp"
+
 #include <LoRa.h>
 
 /// <summary>
@@ -26,12 +32,12 @@
 /// <typeparam name="lbt">(listen before talk) if true, this class will wait and listen to the LORA module before send, otherwise it will send directly</typeparam>
 /// <typeparam name="binary">if true, the data will packed into a short binary message, otherwise it will send as long plain text.</typeparam>
 template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long baseband, long channeloffset, bool lbt, bool binary>
-class LORA {
+class LoraT {
   public:
     /// <summary>Constructor for LORA class, setup the io pins</summary>
     /// <typeparam name="wlanclass">Needs an instance of wlanclass for debug output</typeparam>
     /// <typeparam name="storage">Needs an instance of storage for reading frequency correction</typeparam>
-    LORA(wlanclass * wlanclass, Storage * storage) {
+    LoraT(Wlan* wlanclass, Storage * storage) {
       this->wlan = wlanclass;
       this->storage = storage;
       this->lora = new LoRaClass();
@@ -196,8 +202,12 @@ class LORA {
       return this->lora->random();
     }
   private:
-    wlanclass * wlan;
+    Wlan * wlan;
     LoRaClass * lora;
     Storage * storage;
     bool _lora_enabled = false;
 };
+
+typedef LoraT<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_baseband, lora_channeloffset, listenbeforetalk, lora_send_binary> Lora;
+
+#endif // !_LORA_HPP_INCLUDED

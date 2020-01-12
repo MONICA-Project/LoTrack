@@ -1,11 +1,17 @@
+#ifndef _WLAN_HPP_INCLUDED
+#define _WLAN_HPP_INCLUDED
+
+#include "OLED.hpp"
+#include "STORAGE.hpp"
+
 #include <WiFi.h>
 #include <WiFiServer.h>
 #include <mutex>
 
 template<const char* ssid, const char* psk_key, int server_clients, int server_port, bool debug>
-class WLAN {
+class WlanT {
   public:
-    WLAN(oledclass* disp, Storage * storage) {
+    WlanT(Oled* disp, Storage * storage) {
       this->oled = disp;
       this->storage = storage;
     }
@@ -179,7 +185,7 @@ class WLAN {
     WiFiServer* s = NULL;
     bool _server_connected = false;
     WiFiClient serverClients[server_clients];
-    oledclass* oled;
+    Oled* oled;
     Storage * storage;
     uint8_t clients = 0;
     String serverClientsData[server_clients];
@@ -203,3 +209,7 @@ class WLAN {
       return false;
     }
 };
+
+typedef WlanT<wifissid, wifipsk, 2, 23, print_over_serialport> Wlan;
+
+#endif // !_WLAN_HPP_INCLUDED

@@ -1,3 +1,10 @@
+#ifndef _OTA_HPP_INCLUDED
+#define _OTA_HPP_INCLUDED
+
+#include "WLAN.hpp"
+#include "LED.hpp"
+#include "STORAGE.hpp"
+
 #define NO_GLOBAL_ARDUINOOTA true
 #include <ArduinoOTA.h>
 
@@ -13,7 +20,7 @@ class OTA {
     /// <typeparam name="wlanclass">Instance of the wlanclass, to print debug messages</typeparam>
     /// <typeparam name="ledclass">Instance of the ledclass, to blink the LED</typeparam>
     /// <typeparam name="ledclass">Instance of the storageclass, to load the espname</typeparam>
-    OTA(wlanclass* wlanclass, ledclass * ledclass, Storage * storage) {
+    OTA(Wlan* wlanclass, Led * ledclass, Storage * storage) {
       this->wlan = wlanclass;
       this->led = ledclass;
       this->storage = storage;
@@ -37,8 +44,8 @@ class OTA {
       this->otaClass->handle();
     }
   private:
-    wlanclass * wlan;
-    ledclass * led;
+    Wlan* wlan;
+    Led* led;
     Storage * storage;
     uint32_t blink;
     ArduinoOTAClass * otaClass = NULL;
@@ -108,3 +115,5 @@ class OTA {
       });
     }
 };
+
+#endif // !_OTA_HPP_INCLUDED

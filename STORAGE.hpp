@@ -1,3 +1,6 @@
+#ifndef _STORAGE_HPP_INCLUDED
+#define _STORAGE_HPP_INCLUDED
+
 #include <Preferences.h>
 
 /// <summary>Class to Store values on Non Volatile Memory</summary>
@@ -69,3 +72,5 @@ class Storage {
     float_t battoffset = 0.0;
     String espname;
 };
+
+#endif // !_STORAGE_HPP_INCLUDED

@@ -1,3 +1,8 @@
+#ifndef _GPS_HPP_INCLUDED
+#define _GPS_HPP_INCLUDED
+
+#include "WLAN.hpp"
+
 #include <mutex>
 #include <pthread.h>
 
@@ -11,14 +16,14 @@
 /// <typeparam name="pin_gpsmodule_enable">Pin number or zero to disable</typeparam>
 /// <typeparam name="debug">Print out serial gps communication</typeparam>
 template <int pin_tx, int pin_rx, int pin_gpsmodule_enable, bool debug>
-class GPS {
+class GpsT {
   public:
     /// <summary>Mutex variable to interrupt gps receiving thread</summary>
     pthread_mutex_t MutexGps;
 
     /// <summary>Constructor for GPS Parsing class, setup the io pins</summary>
     /// <typeparam name="wlanclass">Needs an instance of wlanclass for debug output</typeparam>
-    GPS(wlanclass* wlanclass) {
+    GpsT(Wlan* wlanclass) {
       this->wlan = wlanclass;
       this->hs = new HardwareSerial(1);
       this->SetupIO();
@@ -77,7 +82,7 @@ class GPS {
 
   private:
     HardwareSerial * hs;
-    wlanclass * wlan;
+    Wlan * wlan;
     gpsInfoField gpsdata;
     std::mutex mtx;
     String data;
@@ -479,3 +484,7 @@ class GPS {
     }
     #pragma endregion
 };
+
+typedef GpsT<pin_gps_tx, pin_gps_rx, pin_enable_gnss, print_gps_on_serialport> Gps;
+
+#endif // !_GPS_HPP_INCLUDED

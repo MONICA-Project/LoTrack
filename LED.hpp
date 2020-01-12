@@ -1,3 +1,6 @@
+#ifndef _LED_HPP_INCLUDED
+#define _LED_HPP_INCLUDED
+
 /// <summary>
 /// Class that controls the led or the rgb led.
 /// Needs the <typeparamref name="pin_led_red"/> or zero to disable the led complete.
@@ -8,7 +11,7 @@
 /// <typeparam name="pin_led_green">Pin number or zero to disable</typeparam>
 /// <typeparam name="pin_led_blue">Pin number or zero to disable</typeparam>
 template<int pin_led_red, int pin_led_green, int pin_led_blue>
-class LED {
+class LedT {
   public:
     static const uint8_t BLACK = 0;
     static const uint8_t BLUE = 1;
@@ -20,7 +23,7 @@ class LED {
     static const uint8_t WHITE = 7;
 
     /// <summary>Constructor for LED class, setup the io pins</summary>
-    LED() {
+    LedT() {
       this->setupIO();
     }
 
@@ -97,3 +100,7 @@ class LED {
     }
     #pragma endregion
 };
+
+typedef LedT<pin_ledr, pin_ledg, pin_ledb> Led;
+
+#endif // !_LED_HPP_INCLUDED
