@@ -34,7 +34,7 @@
 
 
 
-template<int pin_spimod_cs, int pin_spimod_int0>
+template<int pin_spimod_miso, int pin_spimod_mosi, int pin_spimod_sck, int pin_spimod_cs, int pin_spimod_int0>
 class SPIModT {
   #pragma region Constances
   // common status codes
@@ -74,7 +74,7 @@ class SPIModT {
       case RADIOLIB_USE_SPI:
         pinMode(pin_spimod_cs, OUTPUT);
         digitalWrite(pin_spimod_cs, HIGH);
-        this->_spi->begin();
+        this->_spi->begin(pin_spimod_sck, pin_spimod_miso, pin_spimod_mosi, pin_spimod_cs);
         break;
       }
 
@@ -173,7 +173,7 @@ class SPIModT {
     uint8_t SPIreadCommand = 0b00000000;
     uint8_t SPIwriteCommand = 0b10000000;
 };
-typedef SPIModT<pin_lora_ss, pin_lora_di0> SPIMod;
+typedef SPIModT<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_di0> SPIMod;
 
 class LoraDriver : SPIMod {
   #pragma region Constances
@@ -385,7 +385,7 @@ class LoraDriver : SPIMod {
   #pragma endregion
 
   public:
-    int16_t begin(float freq = 866.750000, float bw = 125.0, uint8_t sf = 10, uint8_t cr = 7, uint8_t syncWord = SX127X_SYNC_WORD, int8_t power = 20, uint8_t currentLimit = 150, uint16_t preambleLength = 8, uint8_t gain = 0) {
+    int16_t begin(uint32_t freq = 866750000, uint32_t bw = 125000, uint8_t sf = 10, uint8_t cr = 7, uint8_t syncWord = SX127X_SYNC_WORD, int8_t power = 20, uint8_t currentLimit = 150, uint16_t preambleLength = 8, uint8_t gain = 0) {
       int16_t state = this->beginSX127x(SX1278_CHIP_VERSION, syncWord, currentLimit, preambleLength);
       if (state != ERR_NONE) {
         return(state);
@@ -582,9 +582,9 @@ class LoraDriver : SPIMod {
       this->SPIsetRegValue(SX127X_REG_HOP_PERIOD, SX127X_HOP_PERIOD_OFF);
     }
 
-    int16_t setFrequency(float freq) {
+    int16_t setFrequency(uint32_t freq) {
       // check frequency range
-      if ((freq < 137.0) || (freq > 1020.0)) {
+      if ((freq < 137000000) || (freq > 1020000000)) {
         return(ERR_INVALID_FREQUENCY);
       }
 
@@ -592,12 +592,12 @@ class LoraDriver : SPIMod {
       if (this->getActiveModem() == SX127X_LORA) {
         // sensitivity optimization for 500kHz bandwidth
         // see SX1276/77/78 Errata, section 2.1 for details
-        if (abs(_bw - 500.0) <= 0.001) {
-          if ((freq >= 862.0) && (freq <= 1020.0)) {
+        if (this->_bw == 500000) {
+          if ((freq >= 862000000) && (freq <= 1020000000)) {
             this->SPIwriteRegister(0x36, 0x02);
             this->SPIwriteRegister(0x3a, 0x64);
           }
-          else if ((freq >= 410.0) && (freq <= 525.0)) {
+          else if ((freq >= 410000000) && (freq <= 525000000)) {
             this->SPIwriteRegister(0x36, 0x02);
             this->SPIwriteRegister(0x3a, 0x7F);
           }
@@ -605,58 +605,58 @@ class LoraDriver : SPIMod {
 
         // mitigation of receiver spurious response
         // see SX1276/77/78 Errata, section 2.3 for details
-        if (abs(_bw - 7.8) <= 0.001) {
+        if (this->_bw == 7800) {
           this->SPIsetRegValue(0x31, 0b0000000, 7, 7);
           this->SPIsetRegValue(0x2F, 0x48);
           this->SPIsetRegValue(0x30, 0x00);
-          freq += 7.8;
+          freq += 7800;
         }
-        else if (abs(_bw - 10.4) <= 0.001) {
+        else if (this->_bw == 10400) {
           this->SPIsetRegValue(0x31, 0b0000000, 7, 7);
           this->SPIsetRegValue(0x2F, 0x44);
           this->SPIsetRegValue(0x30, 0x00);
-          freq += 10.4;
+          freq += 10400;
         }
-        else if (abs(_bw - 15.6) <= 0.001) {
+        else if (this->_bw == 15600) {
           this->SPIsetRegValue(0x31, 0b0000000, 7, 7);
           this->SPIsetRegValue(0x2F, 0x44);
           this->SPIsetRegValue(0x30, 0x00);
-          freq += 15.6;
+          freq += 15600;
         }
-        else if (abs(_bw - 20.8) <= 0.001) {
+        else if (this->_bw == 20800) {
           this->SPIsetRegValue(0x31, 0b0000000, 7, 7);
           this->SPIsetRegValue(0x2F, 0x44);
           this->SPIsetRegValue(0x30, 0x00);
-          freq += 20.8;
+          freq += 20800;
         }
-        else if (abs(_bw - 31.25) <= 0.001) {
+        else if (this->_bw == 31250) {
           this->SPIsetRegValue(0x31, 0b0000000, 7, 7);
           this->SPIsetRegValue(0x2F, 0x44);
           this->SPIsetRegValue(0x30, 0x00);
-          freq += 31.25;
+          freq += 31250;
         }
-        else if (abs(_bw - 41.7) <= 0.001) {
+        else if (this->_bw == 41700) {
           this->SPIsetRegValue(0x31, 0b0000000, 7, 7);
           this->SPIsetRegValue(0x2F, 0x44);
           this->SPIsetRegValue(0x30, 0x00);
-          freq += 41.7;
+          freq += 41700;
         }
-        else if (abs(_bw - 62.5) <= 0.001) {
+        else if (this->_bw == 62500) {
           this->SPIsetRegValue(0x31, 0b0000000, 7, 7);
           this->SPIsetRegValue(0x2F, 0x40);
           this->SPIsetRegValue(0x30, 0x00);
         }
-        else if (abs(_bw - 125.0) <= 0.001) {
+        else if (this->_bw == 125000) {
           this->SPIsetRegValue(0x31, 0b0000000, 7, 7);
           this->SPIsetRegValue(0x2F, 0x40);
           this->SPIsetRegValue(0x30, 0x00);
         }
-        else if (abs(_bw - 250.0) <= 0.001) {
+        else if (this->_bw == 250000) {
           this->SPIsetRegValue(0x31, 0b0000000, 7, 7);
           this->SPIsetRegValue(0x2F, 0x40);
           this->SPIsetRegValue(0x30, 0x00);
         }
-        else if (abs(_bw - 500.0) <= 0.001) {
+        else if (this->_bw == 500000) {
           this->SPIsetRegValue(0x31, 0b1000000, 7, 7);
         }
       }
@@ -665,12 +665,13 @@ class LoraDriver : SPIMod {
       return(this->setFrequencyRaw(freq));
     }
 
-    int16_t setFrequencyRaw(float newFreq) {
+    int16_t setFrequencyRaw(uint32_t newFreq) {
       // set mode to standby
       int16_t state = this->setMode(SX127X_STANDBY);
 
       // calculate register values
-      uint32_t FRF = (newFreq * (uint32_t(1) << SX127X_DIV_EXPONENT)) / SX127X_CRYSTAL_FREQ;
+      float f = (float)newFreq / 1000000;
+      uint32_t FRF = (f * (uint32_t(1) << SX127X_DIV_EXPONENT)) / SX127X_CRYSTAL_FREQ;
 
       // write registers
       state |= this->SPIsetRegValue(SX127X_REG_FRF_MSB, (FRF & 0xFF0000) >> 16);
@@ -679,7 +680,7 @@ class LoraDriver : SPIMod {
       return(state);
     }
 
-    int16_t setBandwidth(float bw) {
+    int16_t setBandwidth(uint32_t bw) {
       // check active modem
       if (this->getActiveModem() != SX127X_LORA) {
         return(ERR_WRONG_MODEM);
@@ -688,34 +689,34 @@ class LoraDriver : SPIMod {
       uint8_t newBandwidth;
 
       // check allowed bandwidth values
-      if (abs(bw - 7.8) <= 0.001) {
+      if (bw ==  7800) {
         newBandwidth = SX1278_BW_7_80_KHZ;
       }
-      else if (abs(bw - 10.4) <= 0.001) {
+      else if (bw == 10400) {
         newBandwidth = SX1278_BW_10_40_KHZ;
       }
-      else if (abs(bw - 15.6) <= 0.001) {
+      else if (bw == 15600) {
         newBandwidth = SX1278_BW_15_60_KHZ;
       }
-      else if (abs(bw - 20.8) <= 0.001) {
+      else if (bw == 20800) {
         newBandwidth = SX1278_BW_20_80_KHZ;
       }
-      else if (abs(bw - 31.25) <= 0.001) {
+      else if (bw == 31250) {
         newBandwidth = SX1278_BW_31_25_KHZ;
       }
-      else if (abs(bw - 41.7) <= 0.001) {
+      else if (bw == 41700) {
         newBandwidth = SX1278_BW_41_70_KHZ;
       }
-      else if (abs(bw - 62.5) <= 0.001) {
+      else if (bw == 62500) {
         newBandwidth = SX1278_BW_62_50_KHZ;
       }
-      else if (abs(bw - 125.0) <= 0.001) {
+      else if (bw == 125000) {
         newBandwidth = SX1278_BW_125_00_KHZ;
       }
-      else if (abs(bw - 250.0) <= 0.001) {
+      else if (bw == 250000) {
         newBandwidth = SX1278_BW_250_00_KHZ;
       }
-      else if (abs(bw - 500.0) <= 0.001) {
+      else if (bw == 500000) {
         newBandwidth = SX1278_BW_500_00_KHZ;
       }
       else {
@@ -728,7 +729,7 @@ class LoraDriver : SPIMod {
         this->_bw = bw;
 
         // calculate symbol length and set low data rate optimization, if needed
-        float symbolLength = (float)(uint32_t(1) << this->_sf) / (float)this->_bw;
+        float symbolLength = (float)(uint32_t(1) << this->_sf) / ((float)this->_bw / 1000);
         if (symbolLength >= 16.0) {
           state = this->SPIsetRegValue(SX1278_REG_MODEM_CONFIG_3, SX1278_LOW_DATA_RATE_OPT_ON, 3, 3);
         }
@@ -789,7 +790,7 @@ class LoraDriver : SPIMod {
         this->_sf = sf;
 
         // calculate symbol length and set low data rate optimization, if needed
-        float symbolLength = (float)(uint32_t(1) << this->_sf) / (float)this->_bw;
+        float symbolLength = (float)(uint32_t(1) << this->_sf) / ((float)this->_bw / 1000);
         if (symbolLength >= 16.0) {
           state = this->SPIsetRegValue(SX1278_REG_MODEM_CONFIG_3, SX1278_LOW_DATA_RATE_OPT_ON, 3, 3);
         }
@@ -931,7 +932,7 @@ class LoraDriver : SPIMod {
   private:
     uint8_t _cr;
     uint8_t _sf;
-    float _bw;
+    uint32_t _bw;
     float _dataRate;
 };
 
@@ -970,6 +971,7 @@ class LoraT {
       this->wlan = wlanclass;
       this->storage = storage;
       this->lora = new LoRaClass();
+      //this->lora = new LoraDriver();
       SPI.begin (pin_sck, pin_miso, pin_mosi, pin_ss);
       this->lora->setPins (pin_ss, pin_rst, pin_dio);
     }
@@ -977,6 +979,7 @@ class LoraT {
     /// <summary>Setup the LORA settings and start the module</summary>
     void Begin() {
       this->wlan->Box("Setup Lora!", 80);
+      //if(this->lora->begin(this->CalculateFrequency() + this->storage->GetFreqoffset()) != ERR_NONE) {
       if (!this->lora->begin (this->CalculateFrequency() + this->storage->GetFreqoffset())) {
         this->wlan->Box("Lora Failed!", 90);
       } else {
@@ -994,6 +997,7 @@ class LoraT {
     /// <summary>Enable Debugmode</summary>
     void Debugmode() {
       this->lora->setSignalBandwidth(1);
+      //this->lora->setBandwidth(7800);
     }
 
     /// <summary>Set an offset to the center frequency</summary>
