@@ -24,7 +24,6 @@
   extern long const lora_baseband = 866750000;
   extern long const lora_channeloffset = 250000;
   extern bool const listenbeforetalk = false;
-  extern bool const lora_send_binary = true;
   extern int const pin_lora_miso = 19;
   extern int const pin_lora_mosi = 27;
   extern int const pin_lora_sck = 5;
@@ -61,7 +60,6 @@
   extern long const lora_baseband = 866750000;
   extern long const lora_channeloffset = 250000;
   extern bool const listenbeforetalk = false;
-  extern bool const lora_send_binary = true;
   extern int const pin_lora_miso = 19;
   extern int const pin_lora_mosi = 27;
   extern int const pin_lora_sck = 5;
@@ -98,7 +96,6 @@
   extern long const lora_baseband = 866750000;
   extern long const lora_channeloffset = 250000;
   extern bool const listenbeforetalk = false;
-  extern bool const lora_send_binary = true;
   extern int const pin_lora_miso = 19;
   extern int const pin_lora_mosi = 18;
   extern int const pin_lora_sck = 5;
@@ -135,7 +132,6 @@
   extern long const lora_baseband = 866750000;
   extern long const lora_channeloffset = 250000;
   extern bool const listenbeforetalk = false;
-  extern bool const lora_send_binary = true;
   extern int const pin_lora_miso = 19;
   extern int const pin_lora_mosi = 18;
   extern int const pin_lora_sck = 5;
@@ -172,7 +168,6 @@
   extern long const lora_baseband = 866750000;
   extern long const lora_channeloffset = 250000;
   extern bool const listenbeforetalk = false;
-  extern bool const lora_send_binary = true;
   extern int const pin_lora_miso = 19;
   extern int const pin_lora_mosi = 18;
   extern int const pin_lora_sck = 5;

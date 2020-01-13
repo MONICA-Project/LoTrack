@@ -103,7 +103,7 @@ class Program {
       this->sleep->TimerSleep();
     }
   private:
-    const uint8_t version = 15;
+    const uint8_t version = 16;
     /**
      * 1 Refactoring and Send networksettings over lora
      * 2 Sleepmode and Powersaving implemented

@@ -6,13 +6,11 @@
 
 #include <SPI.h>
 
-#include <LoRa.h>
-
 /// SPIModT and LoraDriver based on RadioLib (https://github.com/jgromes/RadioLib)
 /// They are under:
 /// MIT License
 /// 
-/// Copyright(c) 2018 Jan Gromeö
+/// Copyright(c) 2018 Jan Grome≈°
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this softwareand associated documentation files(the "Software"), to deal
@@ -31,10 +29,7 @@
 /// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
-
-
-
-template<int pin_spimod_miso, int pin_spimod_mosi, int pin_spimod_sck, int pin_spimod_cs, int pin_spimod_int0>
+template<int pin_spimod_miso, int pin_spimod_mosi, int pin_spimod_sck, int pin_spimod_cs, int pin_spimod_int0, int pin_spimod_rst>
 class SPIModT {
   #pragma region Constances
   // common status codes
@@ -69,6 +64,15 @@ class SPIModT {
 
   public:
     void init(uint8_t interface, uint8_t gpio) {
+      if (pin_spimod_rst != -1) {
+        pinMode(pin_spimod_rst, OUTPUT);
+
+        // perform reset
+        digitalWrite(pin_spimod_rst, LOW);
+        delay(10);
+        digitalWrite(pin_spimod_rst, HIGH);
+        delay(10);
+      }
       // select interface
       switch (interface) {
       case RADIOLIB_USE_SPI:
@@ -92,6 +96,8 @@ class SPIModT {
       // stop SPI
       this->_spi->end();
     }
+
+    int getInt0() const { return(pin_spimod_int0); }
 
     int16_t SPIsetRegValue(uint8_t reg, uint8_t value, uint8_t msb = 7, uint8_t lsb = 0, uint8_t checkInterval = 2) {
       if ((msb > 7) || (lsb > 7) || (lsb > msb)) {
@@ -138,6 +144,10 @@ class SPIModT {
       this->SPItransfer(this->SPIwriteCommand, reg, &data, NULL, 1);
     }
 
+    void SPIwriteRegisterBurst(uint8_t reg, uint8_t* data, uint8_t numBytes) {
+      this->SPItransfer(this->SPIwriteCommand, reg, data, NULL, numBytes);
+    }
+
     void SPItransfer(uint8_t cmd, uint8_t reg, uint8_t* dataOut, uint8_t* dataIn, uint8_t numBytes) {
       // start SPI transaction
       this->_spi->beginTransaction(this->_spiSettings);
@@ -173,7 +183,7 @@ class SPIModT {
     uint8_t SPIreadCommand = 0b00000000;
     uint8_t SPIwriteCommand = 0b10000000;
 };
-typedef SPIModT<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_di0> SPIMod;
+typedef SPIModT<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_di0, pin_lora_rst> SPIMod;
 
 class LoraDriver : SPIMod {
   #pragma region Constances
@@ -340,6 +350,54 @@ class LoraDriver : SPIMod {
   #define SX127X_LNA_GAIN_6                             0b11000000  //  7     5                         min gain
   #define SX127X_LNA_BOOST_OFF                          0b00000000  //  1     0     default LNA current
   #define SX127X_LNA_BOOST_ON                           0b00000011  //  1     0     150% LNA current
+  // SX127X_REG_PACKET_CONFIG_1
+  #define SX127X_PACKET_FIXED                           0b00000000  //  7     7     packet format: fixed length
+  #define SX127X_PACKET_VARIABLE                        0b10000000  //  7     7                    variable length (default)
+  #define SX127X_DC_FREE_NONE                           0b00000000  //  6     5     DC-free encoding: disabled (default)
+  #define SX127X_DC_FREE_MANCHESTER                     0b00100000  //  6     5                       Manchester
+  #define SX127X_DC_FREE_WHITENING                      0b01000000  //  6     5                       Whitening
+  #define SX127X_CRC_OFF                                0b00000000  //  4     4     CRC disabled
+  #define SX127X_CRC_ON                                 0b00010000  //  4     4     CRC enabled (default)
+  #define SX127X_CRC_AUTOCLEAR_OFF                      0b00001000  //  3     3     keep FIFO on CRC mismatch, issue payload ready interrupt
+  #define SX127X_CRC_AUTOCLEAR_ON                       0b00000000  //  3     3     clear FIFO on CRC mismatch, do not issue payload ready interrupt
+  #define SX127X_ADDRESS_FILTERING_OFF                  0b00000000  //  2     1     address filtering: none (default)
+  #define SX127X_ADDRESS_FILTERING_NODE                 0b00000010  //  2     1                        node
+  #define SX127X_ADDRESS_FILTERING_NODE_BROADCAST       0b00000100  //  2     1                        node or broadcast
+  #define SX127X_CRC_WHITENING_TYPE_CCITT               0b00000000  //  0     0     CRC and whitening algorithms: CCITT CRC with standard whitening (default)
+  #define SX127X_CRC_WHITENING_TYPE_IBM                 0b00000001  //  0     0                                   IBM CRC with alternate whitening
+  // SX127X_REG_DIO_MAPPING_1
+  #define SX127X_DIO0_RX_DONE                           0b00000000  //  7     6
+  #define SX127X_DIO0_TX_DONE                           0b01000000  //  7     6
+  #define SX127X_DIO0_CAD_DONE                          0b10000000  //  7     6
+  #define SX127X_DIO1_RX_TIMEOUT                        0b00000000  //  5     4
+  #define SX127X_DIO1_FHSS_CHANGE_CHANNEL               0b00010000  //  5     4
+  #define SX127X_DIO1_CAD_DETECTED                      0b00100000  //  5     4
+  // SX127X_REG_FIFO_TX_BASE_ADDR
+  #define SX127X_FIFO_TX_BASE_ADDR_MAX                  0b00000000  //  7     0     allocate the entire FIFO buffer for TX only
+  // SX127X_REG_DIO_MAPPING_1
+  #define SX127X_DIO0_CONT_SYNC_ADDRESS                 0b00000000  //  7     6
+  #define SX127X_DIO0_CONT_TX_READY                     0b00000000  //  7     6
+  #define SX127X_DIO0_CONT_RSSI_PREAMBLE_DETECTED       0b01000000  //  7     6
+  #define SX127X_DIO0_CONT_RX_READY                     0b10000000  //  7     6
+  #define SX127X_DIO0_PACK_PAYLOAD_READY                0b00000000  //  7     6
+  #define SX127X_DIO0_PACK_PACKET_SENT                  0b00000000  //  7     6
+  #define SX127X_DIO0_PACK_CRC_OK                       0b01000000  //  7     6
+  #define SX127X_DIO0_PACK_TEMP_CHANGE_LOW_BAT          0b11000000  //  7     6
+  #define SX127X_DIO1_CONT_DCLK                         0b00000000  //  5     4
+  #define SX127X_DIO1_CONT_RSSI_PREAMBLE_DETECTED       0b00010000  //  5     4
+  #define SX127X_DIO1_PACK_FIFO_LEVEL                   0b00000000  //  5     4
+  #define SX127X_DIO1_PACK_FIFO_EMPTY                   0b00010000  //  5     4
+  #define SX127X_DIO1_PACK_FIFO_FULL                    0b00100000  //  5     4
+  #define SX127X_DIO2_CONT_DATA                         0b00000000  //  3     2
+  // SX127X_REG_IRQ_FLAGS
+  #define SX127X_CLEAR_IRQ_FLAG_RX_TIMEOUT              0b10000000  //  7     7     timeout
+  #define SX127X_CLEAR_IRQ_FLAG_RX_DONE                 0b01000000  //  6     6     packet reception complete
+  #define SX127X_CLEAR_IRQ_FLAG_PAYLOAD_CRC_ERROR       0b00100000  //  5     5     payload CRC error
+  #define SX127X_CLEAR_IRQ_FLAG_VALID_HEADER            0b00010000  //  4     4     valid header received
+  #define SX127X_CLEAR_IRQ_FLAG_TX_DONE                 0b00001000  //  3     3     payload transmission complete
+  #define SX127X_CLEAR_IRQ_FLAG_CAD_DONE                0b00000100  //  2     2     CAD complete
+  #define SX127X_CLEAR_IRQ_FLAG_FHSS_CHANGE_CHANNEL     0b00000010  //  1     1     FHSS change channel
+  #define SX127X_CLEAR_IRQ_FLAG_CAD_DETECTED            0b00000001  //  0     0     valid LoRa signal detected during CAD operation
   // SX1278 specific register map
   #define SX1278_REG_MODEM_CONFIG_3                     0x26
   #define SX1278_REG_PLL_HOP                            0x44
@@ -929,10 +987,233 @@ class LoraDriver : SPIMod {
     int16_t setMode(uint8_t mode) {
       return(this->SPIsetRegValue(SX127X_REG_OP_MODE, mode, 2, 0, 5));
     }
+
+    int16_t setCRC(bool enableCRC) {
+      if (this->getActiveModem() == SX127X_LORA) {
+        // set LoRa CRC
+        if (enableCRC) {
+          return(this->SPIsetRegValue(SX127X_REG_MODEM_CONFIG_2, SX1278_RX_CRC_MODE_ON, 2, 2));
+        }
+        else {
+          return(this->SPIsetRegValue(SX127X_REG_MODEM_CONFIG_2, SX1278_RX_CRC_MODE_OFF, 2, 2));
+        }
+      }
+      else {
+        // set FSK CRC
+        if (enableCRC) {
+          return(this->SPIsetRegValue(SX127X_REG_PACKET_CONFIG_1, SX127X_CRC_ON, 4, 4));
+        }
+        else {
+          return(this->SPIsetRegValue(SX127X_REG_PACKET_CONFIG_1, SX127X_CRC_OFF, 4, 4));
+        }
+      }
+    }
+
+    int16_t transmit(const char* str, uint8_t addr = 0) {
+      return(this->transmit((uint8_t*)str, strlen(str), addr));
+    }
+
+    int16_t transmit(String& str, uint8_t addr = 0) {
+      return(this->transmit(str.c_str(), addr));
+    }
+
+    int16_t transmit(uint8_t* data, size_t len, uint8_t addr = 0) {
+      // set mode to standby
+      int16_t state = this->setMode(SX127X_STANDBY);
+
+      int16_t modem = this->getActiveModem();
+      uint32_t start = 0;
+      if (modem == SX127X_LORA) {
+        // calculate timeout (150 % of expected time-one-air)
+        float symbolLength = (float)(uint32_t(1) << this->_sf) / ((float)this->_bw / 1000);
+        float de = 0;
+        if (symbolLength >= 16.0) {
+          de = 1;
+        }
+        float ih = (float)this->SPIgetRegValue(SX127X_REG_MODEM_CONFIG_1, 0, 0);
+        float crc = (float)(this->SPIgetRegValue(SX127X_REG_MODEM_CONFIG_2, 2, 2) >> 2);
+        float n_pre = (float)((this->SPIgetRegValue(SX127X_REG_PREAMBLE_MSB) << 8) | this->SPIgetRegValue(SX127X_REG_PREAMBLE_LSB));
+        float n_pay = 8.0 + max(ceil((8.0 * (float)len - 4.0 * (float)this->_sf + 28.0 + 16.0 * crc - 20.0 * ih) / (4.0 * (float)this->_sf - 8.0 * de)) * (float)this->_cr, 0.0);
+        uint32_t timeout = ceil(symbolLength * (n_pre + n_pay + 4.25) * 1500.0);
+
+        // start transmission
+        state = this->startTransmit(data, len, addr);
+        if (state != ERR_NONE) {
+          return(state);
+        }
+
+        // wait for packet transmission or timeout
+        start = micros();
+        while (!digitalRead(this->getInt0())) {
+          if (micros() - start > timeout) {
+            this->clearIRQFlags();
+            return(ERR_TX_TIMEOUT);
+          }
+        }
+
+      }
+      else if (modem == SX127X_FSK_OOK) {
+        // calculate timeout (5ms + 500 % of expected time-on-air)
+        uint32_t timeout = 5000000 + (uint32_t)((((float)(len * 8)) / (this->_br * 1000.0)) * 5000000.0);
+
+        // start transmission
+        state = this->startTransmit(data, len, addr);
+        if (state != ERR_NONE) {
+          return(state);
+        }
+
+        // wait for transmission end or timeout
+        start = micros();
+        while (!digitalRead(this->getInt0())) {
+          if (micros() - start > timeout) {
+            this->clearIRQFlags();
+            this->standby();
+            return(ERR_TX_TIMEOUT);
+          }
+        }
+      }
+      else {
+        return(ERR_UNKNOWN);
+      }
+
+      // update data rate
+      uint32_t elapsed = micros() - start;
+      this->_dataRate = (len * 8.0) / ((float)elapsed / 1000000.0);
+
+      // clear interrupt flags
+      this->clearIRQFlags();
+
+      // set mode to standby to disable transmitter
+      return(this->standby());
+    }
+
+    int16_t startTransmit(uint8_t* data, size_t len, uint8_t addr) {
+      // set mode to standby
+      int16_t state = this->setMode(SX127X_STANDBY);
+
+      int16_t modem = this->getActiveModem();
+      if (modem == SX127X_LORA) {
+        // check packet length
+        if (len >= SX127X_MAX_PACKET_LENGTH) {
+          return(ERR_PACKET_TOO_LONG);
+        }
+
+        // set DIO mapping
+        this->SPIsetRegValue(SX127X_REG_DIO_MAPPING_1, SX127X_DIO0_TX_DONE, 7, 6);
+
+        // clear interrupt flags
+        this->clearIRQFlags();
+
+        // set packet length
+        state |= this->SPIsetRegValue(SX127X_REG_PAYLOAD_LENGTH, len);
+
+        // set FIFO pointers
+        state |= this->SPIsetRegValue(SX127X_REG_FIFO_TX_BASE_ADDR, SX127X_FIFO_TX_BASE_ADDR_MAX);
+        state |= this->SPIsetRegValue(SX127X_REG_FIFO_ADDR_PTR, SX127X_FIFO_TX_BASE_ADDR_MAX);
+
+        // write packet to FIFO
+        this->SPIwriteRegisterBurst(SX127X_REG_FIFO, data, len);
+
+        // start transmission
+        state |= this->setMode(SX127X_TX);
+        if (state != ERR_NONE) {
+          return(state);
+        }
+
+        return(ERR_NONE);
+
+      }
+      else if (modem == SX127X_FSK_OOK) {
+        // check packet length
+        if (len >= SX127X_MAX_PACKET_LENGTH_FSK) {
+          return(ERR_PACKET_TOO_LONG);
+        }
+
+        // set DIO mapping
+        this->SPIsetRegValue(SX127X_REG_DIO_MAPPING_1, SX127X_DIO0_PACK_PACKET_SENT, 7, 6);
+
+        // clear interrupt flags
+        this->clearIRQFlags();
+
+        // set packet length
+        this->SPIwriteRegister(SX127X_REG_FIFO, len);
+
+        // check address filtering
+        uint8_t filter = this->SPIgetRegValue(SX127X_REG_PACKET_CONFIG_1, 2, 1);
+        if ((filter == SX127X_ADDRESS_FILTERING_NODE) || (filter == SX127X_ADDRESS_FILTERING_NODE_BROADCAST)) {
+          this->SPIwriteRegister(SX127X_REG_FIFO, addr);
+        }
+
+        // write packet to FIFO
+        this->SPIwriteRegisterBurst(SX127X_REG_FIFO, data, len);
+
+        // start transmission
+        state |= this->setMode(SX127X_TX);
+        if (state != ERR_NONE) {
+          return(state);
+        }
+
+        return(ERR_NONE);
+      }
+
+      return(ERR_UNKNOWN);
+    }
+
+    void clearIRQFlags() {
+      int16_t modem = this->getActiveModem();
+      if (modem == SX127X_LORA) {
+        this->SPIwriteRegister(SX127X_REG_IRQ_FLAGS, 0b11111111);
+      }
+      else if (modem == SX127X_FSK_OOK) {
+        this->SPIwriteRegister(SX127X_REG_IRQ_FLAGS_1, 0b11111111);
+        this->SPIwriteRegister(SX127X_REG_IRQ_FLAGS_2, 0b11111111);
+      }
+    }
+
+    uint8_t random() {
+      return this->SPIreadRegister(SX127X_REG_RSSI_WIDEBAND);
+    }
+
+    int16_t scanChannel() {
+      // check active modem
+      if (this->getActiveModem() != SX127X_LORA) {
+        return(ERR_WRONG_MODEM);
+      }
+
+      // set mode to standby
+      int16_t state = this->setMode(SX127X_STANDBY);
+
+      // set DIO pin mapping
+      state |= this->SPIsetRegValue(SX127X_REG_DIO_MAPPING_1, SX127X_DIO0_CAD_DONE, 7, 4);
+
+      // clear interrupt flags
+      this->clearIRQFlags();
+
+      // set mode to CAD
+      state |= setMode(SX127X_CAD);
+      if (state != ERR_NONE) {
+        return(state);
+      }
+
+      // wait for channel activity detected or timeout
+      while (!digitalRead(this->getInt0())) {
+        if ((this->SPIreadRegister(SX127X_REG_IRQ_FLAGS) & SX127X_CLEAR_IRQ_FLAG_CAD_DETECTED) == 1) {
+          this->clearIRQFlags();
+          return(PREAMBLE_DETECTED);
+        }
+      }
+
+      // clear interrupt flags
+      this->clearIRQFlags();
+
+      return(CHANNEL_FREE);
+    }
+
   private:
     uint8_t _cr;
     uint8_t _sf;
     uint32_t _bw;
+    float _br = 48.0;
     float _dataRate;
 };
 
@@ -961,7 +1242,7 @@ class LoraDriver : SPIMod {
 /// <typeparam name="espname">String of the node name</typeparam>
 /// <typeparam name="lbt">(listen before talk) if true, this class will wait and listen to the LORA module before send, otherwise it will send directly</typeparam>
 /// <typeparam name="binary">if true, the data will packed into a short binary message, otherwise it will send as long plain text.</typeparam>
-template<int pin_miso, int pin_mosi, int pin_sck, int pin_ss, int pin_rst, int pin_dio, long baseband, long channeloffset, bool lbt, bool binary>
+template<long baseband, long channeloffset, bool lbt>
 class LoraT {
   public:
     /// <summary>Constructor for LORA class, setup the io pins</summary>
@@ -970,24 +1251,16 @@ class LoraT {
     LoraT(Wlan* wlanclass, Storage * storage) {
       this->wlan = wlanclass;
       this->storage = storage;
-      this->lora = new LoRaClass();
-      //this->lora = new LoraDriver();
-      SPI.begin (pin_sck, pin_miso, pin_mosi, pin_ss);
-      this->lora->setPins (pin_ss, pin_rst, pin_dio);
+      this->lora = new LoraDriver();
     }
 
     /// <summary>Setup the LORA settings and start the module</summary>
     void Begin() {
       this->wlan->Box("Setup Lora!", 80);
-      //if(this->lora->begin(this->CalculateFrequency() + this->storage->GetFreqoffset()) != ERR_NONE) {
-      if (!this->lora->begin (this->CalculateFrequency() + this->storage->GetFreqoffset())) {
+      if(this->lora->begin(this->CalculateFrequency() + this->storage->GetFreqoffset()) != ERR_NONE) {
         this->wlan->Box("Lora Failed!", 90);
       } else {
-        this->lora->setSignalBandwidth(125000);
-        this->lora->setSpreadingFactor(10);
-        this->lora->setCodingRate4(7);
-        this->lora->setTxPower(20);
-        this->lora->enableCrc();
+        this->lora->setCRC(true);
         this->wlan->Box("Lora successful", 90);
         this->_lora_enabled = true;
       }
@@ -996,8 +1269,8 @@ class LoraT {
     #pragma region Debug-Mode for Frequenztuning
     /// <summary>Enable Debugmode</summary>
     void Debugmode() {
-      this->lora->setSignalBandwidth(1);
-      //this->lora->setBandwidth(7800);
+      //this->lora->setSignalBandwidth(1);
+      this->lora->setBandwidth(7800);
     }
 
     /// <summary>Set an offset to the center frequency</summary>
@@ -1008,31 +1281,23 @@ class LoraT {
 
     /// <summary>Send TEST TEST TEST over lora</summary>
     void DebugSend() {
-      this->lora->idle();
-      this->lora->beginPacket();
-      this->lora->print("TEST TEST TEST");
-      this->lora->endPacket();
-      this->lora->sleep();
+      this->lora->transmit("TEST TEST TEST");
     }
     #pragma endregion
 
     #pragma region Send Data
     /// <summary>Send a string over LORA</summary>
     /// <typeparam name="data">Text that should be send</typeparam>
-    void Send(String data) {
+    void SendLora(String data) {
       long startWait, endWait;
       if(lbt) {
         startWait = millis();
-        while(this->lora->hasChannelActivity()) {
+        while(this->lora->scanChannel() != CHANNEL_FREE) {
           delay(1);
         }
         endWait = millis();
       }
-      this->lora->idle();
-      this->lora->beginPacket();
-      this->lora->print(data);
-      this->lora->endPacket();
-      this->lora->sleep();
+      this->lora->transmit(data);
       this->wlan->Log(String("################################################\n"));
       if(lbt) {
         this->wlan->Log(String("Waiting: ") + String(endWait-startWait) + String(" ms\n"));
@@ -1043,20 +1308,16 @@ class LoraT {
     /// <summary>Send a binary array over LORA</summary>
     /// <typeparam name="data">Byte array of the data</typeparam>
     /// <typeparam name="size">length of the array</typeparam>
-    void Send(uint8_t* data, uint8_t size) {
+    void SendLora(uint8_t* data, uint8_t size) {
       long startWait, endWait;
       if(lbt) {
         startWait = millis();
-        while(this->lora->hasChannelActivity()) {
-        delay(1);
+        while(this->lora->scanChannel() != CHANNEL_FREE) {
+          delay(1);
         }
         endWait = millis();
       }
-      this->lora->idle();
-      this->lora->beginPacket();
-      this->lora->write(data, size);
-      this->lora->endPacket();
-      this->lora->sleep();
+      this->lora->transmit(data, size);
       this->wlan->Log(String("################################################\n"));
       if(lbt) {
         this->wlan->Log(String("Waiting: ") + String(endWait - startWait) + String(" ms\n"));
@@ -1074,39 +1335,40 @@ class LoraT {
     /// <typeparam name="batt">voltage value of the battery</typeparam>
     /// <typeparam name="panic">optional, if true data will send as panic item</typeparam>
     void Send(gpsInfoField gps, float batt, bool panic = false) {
-      if(binary) {
-        //Data 1+2+4+4+1+2+3+3+1 = 21 Char
-        uint8_t lora_data[21];
-        if(panic) {
+      //Data 1+2+4+4+1+2+3+3+1 = 21 Char
+      uint8_t lora_data[21];
+      if(panic) {
         lora_data[0] = 'p';
-        } else {
+      } else {
         lora_data[0] = 'b';
-        }
-        for(uint8_t i = 0; i < 2; i++) {
+      }
+      for(uint8_t i = 0; i < 2; i++) {
         if(this->storage->GetEspname().length() > i) {
           lora_data[i + 1] = this->storage->GetEspname().charAt(i);
         } else {
           lora_data[i + 1] = 0;
         }
-        }
-        uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[3]  = (lat >> 0) & 0xFF; lora_data[4]  = (lat >> 8) & 0xFF; lora_data[5]  = (lat >> 16) & 0xFF; lora_data[6]  = (lat >> 24) & 0xFF;
-        uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[7] = (lon >> 0) & 0xFF; lora_data[8]  = (lon >> 8) & 0xFF; lora_data[9]  = (lon >> 16) & 0xFF; lora_data[10]  = (lon >> 24) & 0xFF; 
-        if(gps.hdop >= 25.5) { lora_data[11] = 255; } else if(gps.hdop <= 25.5 && gps.hdop > 0){ lora_data[11] = (uint8_t)(gps.hdop * 10); } else { lora_data[11] = 0; }
-        lora_data[12] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 0) & 0xFF); lora_data[13] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 8) & 0xFF);
-        lora_data[14] = String(gps.time.substring(0, 2)).toInt(); lora_data[15] = String(gps.time.substring(2, 4)).toInt(); lora_data[16] = String(gps.time.substring(4, 6)).toInt();
-        lora_data[17] = gps.day; lora_data[18] = gps.month; lora_data[19] = (uint8_t)(gps.year - 2000);
-        lora_data[20] = (uint8_t)((batt * 100)-230);
-        this->Send(lora_data, 21);
-        if(panic) {
+      }
+      uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[3]  = (lat >> 0) & 0xFF; lora_data[4]  = (lat >> 8) & 0xFF; lora_data[5]  = (lat >> 16) & 0xFF; lora_data[6]  = (lat >> 24) & 0xFF;
+      uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[7] = (lon >> 0) & 0xFF; lora_data[8]  = (lon >> 8) & 0xFF; lora_data[9]  = (lon >> 16) & 0xFF; lora_data[10]  = (lon >> 24) & 0xFF; 
+      if(gps.hdop >= 25.5) { 
+        lora_data[11] = 255; 
+      } else if(gps.hdop <= 25.5 && gps.hdop > 0) { 
+        lora_data[11] = (uint8_t)(gps.hdop * 10); 
+      } else { 
+        lora_data[11] = 0; 
+      }
+      lora_data[12] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 0) & 0xFF); lora_data[13] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 8) & 0xFF);
+      lora_data[14] = String(gps.time.substring(0, 2)).toInt(); lora_data[15] = String(gps.time.substring(2, 4)).toInt(); lora_data[16] = String(gps.time.substring(4, 6)).toInt();
+      lora_data[17] = gps.day; lora_data[18] = gps.month; lora_data[19] = (uint8_t)(gps.year - 2000);
+      lora_data[20] = (uint8_t)((batt * 100)-230);
+      this->SendLora(lora_data, 21);
+      if(panic) {
         this->lora->setSpreadingFactor(11);
-        this->Send(lora_data, 21);
+        this->SendLora(lora_data, 21);
         this->lora->setSpreadingFactor(12);
-        this->Send(lora_data, 21);
+        this->SendLora(lora_data, 21);
         this->lora->setSpreadingFactor(10);
-        }
-      } else {
-        //Gps 9+9+7+5+4 = 34 Char
-        this->Send(this->storage->GetEspname() + "\n" + String(gps.latitude, 6) + "," + String(gps.longitude, 6) + "," + String(gps.time) + "," + String(gps.hdop, 2) + "," + String(gps.height, 1) + "," + String(batt, 2));
       }
     }
 
@@ -1119,7 +1381,7 @@ class LoraT {
     /// <typeparam name="freqoffset">currently used frequency offset</typeparam>
     /// <typeparam name="runningStatus">0 = for Shutdown node now, 1 = normal Statup (wifi on, no sleeping), 2 = Powersafe mode</typeparam>
     void Send(uint8_t version, String ip, String ssid, bool wififlag, float battery, int32_t freqoffset, uint8_t runningStatus) {
-      this->Send("deb\n" + this->storage->GetEspname() + "\n" + String(version) + "," + ip + "," + ssid + "," + (wififlag ? "t" : "f") + "," + String(battery, 2) + "," + String(freqoffset)+","+String(runningStatus));
+      this->SendLora("deb\n" + this->storage->GetEspname() + "\n" + String(version) + "," + ip + "," + ssid + "," + (wififlag ? "t" : "f") + "," + String(battery, 2) + "," + String(freqoffset)+","+String(runningStatus));
     }
     #pragma endregion
 
@@ -1136,11 +1398,11 @@ class LoraT {
     }
   private:
     Wlan * wlan;
-    LoRaClass * lora;
+    LoraDriver* lora;
     Storage * storage;
     bool _lora_enabled = false;
 };
 
-typedef LoraT<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_baseband, lora_channeloffset, listenbeforetalk, lora_send_binary> Lora;
+typedef LoraT<lora_baseband, lora_channeloffset, listenbeforetalk> Lora;
 
 #endif // !_LORA_HPP_INCLUDED
