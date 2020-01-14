@@ -5,6 +5,7 @@
 #include "STORAGE.hpp"
 
 #include <SPI.h>
+#include "mbedtls/md.h"
 
 /// SPIModT and LoraDriver based on RadioLib (https://github.com/jgromes/RadioLib)
 /// They are under:
@@ -1384,6 +1385,43 @@ class LoraT {
       this->SendLora("deb\n" + this->storage->GetEspname() + "\n" + String(version) + "," + ip + "," + ssid + "," + (wififlag ? "t" : "f") + "," + String(battery, 2) + "," + String(freqoffset)+","+String(runningStatus));
     }
     #pragma endregion
+
+    uint8_t* CreateSha() {
+      uint8_t* key = new uint8_t[36];
+
+      for (uint8_t i = 0; i < 32; i++) {
+        key[i] = this->storage->GetKey()[i];
+      }
+      key[32] = this->storage->GetEspname().charAt(0);
+      key[33] = this->storage->GetEspname().charAt(1);
+      key[34] = 0;
+      key[35] = 1;
+
+      String g = String("pSHA: ");
+      for (uint8_t i = 0; i < 36; i++) {
+        g = g + String(key[i], HEX) + String(" ");
+      }
+      this->wlan->Log(g + String("\n"));
+
+      mbedtls_md_context ctx;
+      mbedtls_md_type_t md_type = MBEDTLS_MD_SHA256;
+
+      mbedtls_md_init(&ctx);
+      mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(md_type), 0);
+      mbedtls_md_starts(&ctx);
+      mbedtls_md_update(&ctx, (const unsigned char*)key, 36);
+      uint8_t shaResult[32];
+      mbedtls_md_finish(&ctx, shaResult);
+      mbedtls_md_free(&ctx);
+
+      String g = String("aSHA: ");
+      for (uint8_t i = 0; i < 36; i++) {
+        g = g + String(shaResult[i], HEX) + String(" ");
+      }
+      this->wlan->Log(g + String("\n"));
+
+      return shaResult;
+    }
 
     /// <summary>Calculate the device frequency from the first letter of the name of the device</summary>
     /// <returns>return the frequency in hz</returns>
