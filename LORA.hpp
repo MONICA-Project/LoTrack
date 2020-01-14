@@ -1,11 +1,13 @@
 #ifndef _LORA_HPP_INCLUDED
 #define _LORA_HPP_INCLUDED
 
+RTC_DATA_ATTR uint16_t sendCount = 0x0000;
+
 #include "WLAN.hpp"
 #include "STORAGE.hpp"
 
 #include <SPI.h>
-#include "mbedtls/md.h"
+#include <mbedtls/md.h>
 
 /// SPIModT and LoraDriver based on RadioLib (https://github.com/jgromes/RadioLib)
 /// They are under:
@@ -1326,7 +1328,7 @@ class LoraT {
 
       String g;
       for(uint8_t i = 0; i < size; i++) {
-        g = g + String(data[i], HEX) + String(" ");
+        g = g + (data[i] < 16 ? String("0") + String(data[i], HEX) : String(data[i], HEX)) + String(" ");
       }
       this->wlan->Log(g + String("\n"));
     }
@@ -1363,6 +1365,8 @@ class LoraT {
       lora_data[14] = String(gps.time.substring(0, 2)).toInt(); lora_data[15] = String(gps.time.substring(2, 4)).toInt(); lora_data[16] = String(gps.time.substring(4, 6)).toInt();
       lora_data[17] = gps.day; lora_data[18] = gps.month; lora_data[19] = (uint8_t)(gps.year - 2000);
       lora_data[20] = (uint8_t)((batt * 100)-230);
+      uint16_t counter = sendCount++;
+      uint8_t* sha = this->CreateSha(counter);
       this->SendLora(lora_data, 21);
       if(panic) {
         this->lora->setSpreadingFactor(11);
@@ -1386,7 +1390,7 @@ class LoraT {
     }
     #pragma endregion
 
-    uint8_t* CreateSha() {
+    uint8_t* CreateSha(uint16_t counter) {
       uint8_t* key = new uint8_t[36];
 
       for (uint8_t i = 0; i < 32; i++) {
@@ -1394,16 +1398,17 @@ class LoraT {
       }
       key[32] = this->storage->GetEspname().charAt(0);
       key[33] = this->storage->GetEspname().charAt(1);
-      key[34] = 0;
-      key[35] = 1;
+      key[34] = (counter >> 8) & 0xFF;
+      key[35] = (counter >> 0) & 0xFF;
+      
 
-      String g = String("pSHA: ");
+      String p = String("pSHA: ");
       for (uint8_t i = 0; i < 36; i++) {
-        g = g + String(key[i], HEX) + String(" ");
+        p = p + (key[i] < 16 ? String("0") + String(key[i], HEX) : String(key[i], HEX)) + String(" ");
       }
-      this->wlan->Log(g + String("\n"));
+      this->wlan->Log(p + String("\n"));
 
-      mbedtls_md_context ctx;
+      mbedtls_md_context_t ctx;
       mbedtls_md_type_t md_type = MBEDTLS_MD_SHA256;
 
       mbedtls_md_init(&ctx);
@@ -1414,11 +1419,11 @@ class LoraT {
       mbedtls_md_finish(&ctx, shaResult);
       mbedtls_md_free(&ctx);
 
-      String g = String("aSHA: ");
-      for (uint8_t i = 0; i < 36; i++) {
-        g = g + String(shaResult[i], HEX) + String(" ");
+      String a = String("aSHA: ");
+      for (uint8_t i = 0; i < 32; i++) {
+        a = a + (shaResult[i] < 16 ? String("0") + String(shaResult[i], HEX) : String(shaResult[i], HEX)) + String(" ");
       }
-      this->wlan->Log(g + String("\n"));
+      this->wlan->Log(a + String("\n"));
 
       return shaResult;
     }
