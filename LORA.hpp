@@ -1336,8 +1336,8 @@ class LoraT {
       uint16_t counter = sendCount++;
 
       uint8_t message[18];
-      message[0] = (counter >> 8) & 0xFF;
-      message[1] = (counter >> 0) & 0xFF;
+      message[0] = (counter >> 0) & 0xFF;
+      message[1] = (counter >> 8) & 0xFF;
 
       for (uint8_t i = 0; i < 2; i++) {
         if (this->storage->GetEspname().length() > i) {
