@@ -1384,7 +1384,7 @@ class LoraT {
       }
       data[13] = this->CreateCRC(counter, message[2], message[3]);
 
-      uint8_t* sha = this->CreateSha(counter);
+      uint8_t* sha = this->CreateSha(counter, message[2], message[3]);
 
       this->wlan->Log(String("data: "));
       this->PrintHex(data, 14);
@@ -1466,14 +1466,14 @@ class LoraT {
       return ~crc8_le((uint8_t)~0x00, buf, 4);
     }
 
-    uint8_t* CreateSha(uint16_t counter) {
+    uint8_t* CreateSha(uint16_t counter, uint8_t name1, uint8_t name2) {
       uint8_t* key = new uint8_t[36];
 
       for (uint8_t i = 0; i < 32; i++) {
         key[i] = this->storage->GetKey()[i];
       }
-      key[32] = this->storage->GetEspname().charAt(0);
-      key[33] = this->storage->GetEspname().charAt(1);
+      key[32] = name1;
+      key[33] = name2;
       key[34] = (counter >> 8) & 0xFF;
       key[35] = (counter >> 0) & 0xFF;
 
