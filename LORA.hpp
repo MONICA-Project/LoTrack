@@ -8,7 +8,6 @@ RTC_DATA_ATTR uint16_t sendCount = 0x0000;
 
 #include <SPI.h>
 #include <mbedtls/md.h>
-#include <rom/crc.h>
 
 /// SPIModT and LoraDriver based on RadioLib (https://github.com/jgromes/RadioLib)
 /// They are under:
@@ -1382,66 +1381,33 @@ class LoraT {
       else if (gps.Satellites > 0) {
         data[12] |= gps.Satellites;
       }
-      data[13] = this->CreateCRC(counter, message[2], message[3]);
 
-      uint8_t* sha = this->CreateSha(counter, message[2], message[3]);
+      uint8_t shacrcdata[17];
+      for (uint8_t i = 0; i < 4; i++) {
+        shacrcdata[i] = message[i];
+      }
+      for (uint8_t i = 0; i < 13; i++) {
+        shacrcdata[i+4] = data[i];
+      }
 
-      this->wlan->Log(String("data: "));
-      this->PrintHex(data, 14);
+      uint8_t shacrc[32];
+      this->CreateSha(shacrc, shacrcdata, 17);
+      data[13] = shacrc[0];
 
+      uint8_t sha[32];
+      this->CreateKeySha(sha, message);
       for (uint8_t i = 0; i < 14; i++) {
         message[i + 4] = data[i] ^ sha[i + 18];
       }
 
-      this->wlan->Log(String("message: "));
-      this->PrintHex(message, 18);
-
       this->SendLora(message, 18);
       if (panic) {
         this->lora->setSpreadingFactor(12);
-        this->SendLora(message, 21);
+        this->SendLora(message, 18);
         this->lora->setSpreadingFactor(11);
-        this->SendLora(message, 21);
+        this->SendLora(message, 18);
         this->lora->setSpreadingFactor(10);
       }
-
-      /*//Data 1+2+4+4+1+2+3+3+1 = 21 Char
-      uint8_t lora_data[21];
-      if(panic) {
-        lora_data[0] = 'p';
-      } else {
-        lora_data[0] = 'b';
-      }
-      for(uint8_t i = 0; i < 2; i++) {
-        if(this->storage->GetEspname().length() > i) {
-          lora_data[i + 1] = this->storage->GetEspname().charAt(i);
-        } else {
-          lora_data[i + 1] = 0;
-        }
-      }
-      uint64_t lat = *(uint64_t*)&gps.latitude;  lora_data[3]  = (lat >> 0) & 0xFF; lora_data[4]  = (lat >> 8) & 0xFF; lora_data[5]  = (lat >> 16) & 0xFF; lora_data[6]  = (lat >> 24) & 0xFF;
-      uint64_t lon = *(uint64_t*)&gps.longitude; lora_data[7] = (lon >> 0) & 0xFF; lora_data[8]  = (lon >> 8) & 0xFF; lora_data[9]  = (lon >> 16) & 0xFF; lora_data[10]  = (lon >> 24) & 0xFF; 
-      if(gps.hdop >= 25.5) { 
-        lora_data[11] = 255; 
-      } else if(gps.hdop <= 25.5 && gps.hdop > 0) { 
-        lora_data[11] = (uint8_t)(gps.hdop * 10); 
-      } else { 
-        lora_data[11] = 0; 
-      }
-      lora_data[12] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 0) & 0xFF); lora_data[13] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 8) & 0xFF);
-      lora_data[14] = String(gps.time.substring(0, 2)).toInt(); lora_data[15] = String(gps.time.substring(2, 4)).toInt(); lora_data[16] = String(gps.time.substring(4, 6)).toInt();
-      lora_data[17] = gps.day; lora_data[18] = gps.month; lora_data[19] = (uint8_t)(gps.year - 2000);
-      lora_data[20] = (uint8_t)((batt * 100)-230);
-      
-      
-      this->SendLora(lora_data, 21);
-      if(panic) {
-        this->lora->setSpreadingFactor(11);
-        this->SendLora(lora_data, 21);
-        this->lora->setSpreadingFactor(12);
-        this->SendLora(lora_data, 21);
-        this->lora->setSpreadingFactor(10);
-      }*/
     }
 
     /// <summary>Send status information over LORA</summary>
@@ -1457,44 +1423,36 @@ class LoraT {
     }
     #pragma endregion
 
-    uint8_t CreateCRC(uint16_t data, uint8_t name1, uint8_t name2) {
-      uint8_t buf[] = new uint8_t[4];
-      buf[0] = (data >> 8) & 0xFF;
-      buf[1] = (data >> 0) & 0xFF;
-      buf[2] = name1;
-      buf[3] = name2;
-      return ~crc8_le((uint8_t)~0x00, buf, 4);
-    }
-
-    uint8_t* CreateSha(uint16_t counter, uint8_t name1, uint8_t name2) {
+    /// <summary>Create the SHA256 for the XOr Crypto</summary>
+    /// <typeparam name="shaResult">The result of the SHA function</typeparam>
+    /// <typeparam name="message">The message that contains the name and the counter</typeparam>
+    void CreateKeySha(uint8_t* shaResult, uint8_t* message) {
       uint8_t* key = new uint8_t[36];
 
       for (uint8_t i = 0; i < 32; i++) {
         key[i] = this->storage->GetKey()[i];
       }
-      key[32] = name1;
-      key[33] = name2;
-      key[34] = (counter >> 8) & 0xFF;
-      key[35] = (counter >> 0) & 0xFF;
+      for (uint8_t i = 0; i < 4; i++) {
+        key[32 + i] = message[i];
+      }
 
-      this->wlan->Log(String("pSha: "));
-      this->PrintHex(key, 36);
+      this->CreateSha(shaResult, key, 36);
+    }
 
+    /// <summary>Create a SHA256 over data</summary>
+    /// <typeparam name="shaResult">The result of the SHA function</typeparam>
+    /// <typeparam name="data">The data that should be hashed</typeparam>
+    /// <typeparam name="len">Length of the data</typeparam>
+    void CreateSha(uint8_t* shaResult, uint8_t* data, uint8_t len) {
       mbedtls_md_context_t ctx;
       mbedtls_md_type_t md_type = MBEDTLS_MD_SHA256;
 
       mbedtls_md_init(&ctx);
       mbedtls_md_setup(&ctx, mbedtls_md_info_from_type(md_type), 0);
       mbedtls_md_starts(&ctx);
-      mbedtls_md_update(&ctx, (const unsigned char*)key, 36);
-      uint8_t shaResult[32];
+      mbedtls_md_update(&ctx, (const unsigned char*)data, len);
       mbedtls_md_finish(&ctx, shaResult);
       mbedtls_md_free(&ctx);
-
-      this->wlan->Log(String("aSha: "));
-      this->PrintHex(shaResult, 32);
-
-      return shaResult;
     }
 
     /// <summary>Calculate the device frequency from the first letter of the name of the device</summary>
@@ -1509,6 +1467,9 @@ class LoraT {
       return this->lora->random();
     }
 
+    /// <summary>Prints a byte array as HEX</summary>
+    /// <typeparam name="data">The data that should be printed</typeparam>
+    /// <typeparam name="len">Length of the data</typeparam>
     void PrintHex(uint8_t* data, uint8_t size) {
       String g;
       for (uint8_t i = 0; i < size; i++) {
