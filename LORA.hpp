@@ -1348,56 +1348,47 @@ class LoraT {
         }
       }
 
-      uint8_t data[14];
-      uint64_t lat = *(uint64_t*)&gps.latitude;  data[0] = (lat >> 0) & 0xFF; data[1] = (lat >> 8) & 0xFF; data[2] = (lat >> 16) & 0xFF; data[3] = (lat >> 24) & 0xFF;
-      uint64_t lon = *(uint64_t*)&gps.longitude; data[4] = (lon >> 0) & 0xFF; data[5] = (lon >> 8) & 0xFF; data[6] = (lon >> 16) & 0xFF; data[7] = (lon >> 24) & 0xFF;
-      data[8] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 0) & 0xFF); data[9] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 8) & 0xFF);
-      data[10] = (uint8_t)((batt * 100) - 230);
+      uint64_t lat = *(uint64_t*)&gps.latitude;  message[4] = (lat >> 0) & 0xFF; message[5] = (lat >> 8) & 0xFF; message[6] = (lat >> 16) & 0xFF; message[7] = (lat >> 24) & 0xFF;
+      uint64_t lon = *(uint64_t*)&gps.longitude; message[8] = (lon >> 0) & 0xFF; message[9] = (lon >> 8) & 0xFF; message[10] = (lon >> 16) & 0xFF; message[11] = (lon >> 24) & 0xFF;
+      message[12] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 0) & 0xFF); message[13] = (uint8_t)((((uint16_t)(gps.height * 10)) >> 8) & 0xFF);
+      message[14] = (uint8_t)((batt * 100) - 230);
       if (gps.hdop >= 25.5) {
-        data[11] = 255;
+        message[15] = 255;
       }
       else if (gps.hdop <= 25.5 && gps.hdop > 0) {
-        data[11] = (uint8_t)(gps.hdop * 10);
+        message[15] = (uint8_t)(gps.hdop * 10);
       }
       else {
-        data[11] = 0;
+        message[15] = 0;
       }
-      data[12] = 0;
+      message[16] = 0;
       if (panic) {
-        data[12] |= (1 << 7);
+        message[16] |= (1 << 7);
       }
       if (gps.time != "000000") {
-        data[12] |= (1 << 6);
+        message[16] |= (1 << 6);
       }
       if (gps.day != 0 && gps.month != 0 && gps.year != 0) {
-        data[12] |= (1 << 5);
+        message[16] |= (1 << 5);
       }
       if (gps.fixtype == 3) {
-        data[12] |= (1 << 4);
+        message[16] |= (1 << 4);
       }
       if (gps.Satellites > 15) {
-        data[12] |= 15;
+        message[16] |= 15;
       }
       else if (gps.Satellites > 0) {
-        data[12] |= gps.Satellites;
-      }
-
-      uint8_t shacrcdata[17];
-      for (uint8_t i = 0; i < 4; i++) {
-        shacrcdata[i] = message[i];
-      }
-      for (uint8_t i = 0; i < 13; i++) {
-        shacrcdata[i+4] = data[i];
+        message[16] |= gps.Satellites;
       }
 
       uint8_t shacrc[32];
-      this->CreateSha(shacrc, shacrcdata, 17);
-      data[13] = shacrc[0];
+      this->CreateSha(shacrc, message, 17);
+      message[17] = shacrc[0];
 
       uint8_t sha[32];
       this->CreateKeySha(sha, message);
       for (uint8_t i = 0; i < 14; i++) {
-        message[i + 4] = data[i] ^ sha[i + 18];
+        message[i + 4] = message[i + 4] ^ sha[i + 18];
       }
 
       this->SendLora(message, 18);
