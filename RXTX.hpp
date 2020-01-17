@@ -1,3 +1,6 @@
+#ifndef _RXTX_HPP_INCLUDED
+#define _RXTX_HPP_INCLUDED
+
 /// <summary>Class to create a serial communication</summary>
 class RXTX {
 public:
@@ -7,3 +10,5 @@ public:
     while (!Serial);
   }
 };
+
+#endif // !_RXTX_HPP_INCLUDED

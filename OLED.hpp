@@ -1,3 +1,6 @@
+#ifndef _OLED_HPP_INCLUDED
+#define _OLED_HPP_INCLUDED
+
 #include <SSD1306Wire.h>
 
 /// <summary>
@@ -7,10 +10,10 @@
 /// <typeparam name="pin_scl">Pin number of SCL pin on the controller</typeparam>
 /// <typeparam name="pin_display_reset">Pin number of pin to reset the OLED. If zero display is disabled</typeparam>
 template <int pin_sda, int pin_scl, int pin_display_reset>
-class OLED {
+class OledT {
   public:
     /// <summary>Constructor for OLED class, setup the io pins and init the display</summary>
-    OLED() {
+    OledT() {
       if(pin_display_reset != 0) {
         this->display_power();
         this->d = new SSD1306Wire(0x3c, pin_sda, pin_scl);
@@ -98,3 +101,7 @@ class OLED {
       }
     }
 };
+
+typedef OledT<pin_oled_sda, pin_oled_scl, pin_oled_pwr> Oled;
+
+#endif // !_OLED_HPP_INCLUDED

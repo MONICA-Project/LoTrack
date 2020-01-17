@@ -1,3 +1,8 @@
+#ifndef _SLEEP_HPP_INCLUDED
+#define _SLEEP_HPP_INCLUDED
+
+#include "LED.hpp"
+
 #include <driver/rtc_io.h>
 #include <mutex>
 #include <pthread.h>
@@ -8,13 +13,13 @@
 /// <typeparam name="pin_regulator_enable">Pin number of Pin to hold the EN-Pin from the Powerregulator high, zero to diable function</typeparam>
 /// <typeparam name="pin_button">Pin number of the Button-Pin, zero disables button</typeparam>
 template<int pin_regulator_enable, int pin_button>
-class Sleep {
+class SleepT {
   public:
     /// <summary>Mutex for not going to sleep, when parsing Button</summary>
     pthread_mutex_t MutexSleep;
 
     /// <summary>Constructor for Sleep class, setup the io pins</summary>
-    Sleep(ledclass * ledclass) {
+    SleepT(Led * ledclass) {
       this->led = ledclass;
       this->SetupPins();
     }
@@ -120,7 +125,7 @@ class Sleep {
     bool enableSleep = false;
     bool wakeupByButton = false;
     const uint64_t sleepTime = 5000;
-    ledclass * led;
+    Led * led;
 
     void SetupPins() {
       if(pin_regulator_enable != 0) {
@@ -157,3 +162,7 @@ class Sleep {
       }
     }
 };
+
+typedef SleepT<pin_regulator_enable, pin_button> Sleep;
+
+#endif // !_SLEEP_HPP_INCLUDED

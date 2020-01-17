@@ -1,13 +1,18 @@
+#ifndef _BATTERY_HPP_INCLUDED
+#define _BATTERY_HPP_INCLUDED
+
+#include "STORAGE.hpp"
+
 /// <summary>
 /// Class that read out the battery voltage, needs the <typeparamref name="battery_pin"/> as a number.
 /// If zero a fix value of 4V is readout.
 /// </summary>
 /// <typeparam name="battery_pin">Pin number or zero to disable</typeparam>
 template<int battery_pin>
-class Battery {
+class BatteryT {
   public:
     /// <summary>Constructor of the battery voltage class, setups the Pin</summary>
-    Battery(Storage * storage) {
+    BatteryT(Storage * storage) {
       this->storage = storage;
       this->SetupIO();
     }
@@ -42,3 +47,7 @@ class Battery {
       }
     }
 };
+
+typedef BatteryT<pin_batt> Battery;
+
+#endif // !_BATTERY_HPP_INCLUDED

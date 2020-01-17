@@ -3,21 +3,14 @@
 #include "RXTX.hpp"
 #include "LED.hpp"
 #include "STORAGE.hpp"
-
-typedef LED<pin_ledr, pin_ledg, pin_ledb> ledclass;
 #include "OLED.hpp"
-typedef OLED<pin_oled_sda, pin_oled_scl, pin_oled_pwr> oledclass;
 #include "WLAN.hpp"
-typedef WLAN<wifissid, wifipsk, 2, 23, print_over_serialport> wlanclass;
 #include "OTA.hpp"
 #include "GPS.hpp"
-typedef GPS<pin_gps_tx, pin_gps_rx, pin_enable_gnss, print_gps_on_serialport> gpsclass;
 #include "LORA.hpp"
-typedef LORA<pin_lora_miso, pin_lora_mosi, pin_lora_sck, pin_lora_ss, pin_lora_rst, pin_lora_di0, lora_baseband, lora_channeloffset, listenbeforetalk, lora_send_binary> loraclass;
 #include "BATTERY.hpp"
-typedef Battery<pin_batt> battclass;
 #include "SLEEP.hpp"
-typedef Sleep<pin_regulator_enable, pin_button> sleepclass;
+
 #include <pthread.h>
 
 /// <summary>Global program class, that execute the whole program</summary>
@@ -26,14 +19,14 @@ class Program {
     /// <summary>Constructor of programm class, init all subclasses</summary>
     Program() {
       this->s = new RXTX();
-      this->led = new ledclass();
-      this->sleep = new sleepclass(this->led);
+      this->led = new Led();
+      this->sleep = new Sleep(this->led);
       this->storage = new Storage();
-      this->wlan = new wlanclass(new oledclass(), this->storage);
+      this->wlan = new Wlan(new Oled(), this->storage);
       this->aOTA = new OTA(this->wlan, this->led, this->storage);
-      this->gps = new gpsclass(this->wlan);
-      this->batt = new battclass(this->storage);
-      this->lora = new loraclass(this->wlan, this->storage);
+      this->gps = new Gps(this->wlan);
+      this->batt = new Battery(this->storage);
+      this->lora = new Lora(this->wlan, this->storage);
     }
 
     /// <summary>Startup the controller, init wifi if controller was resetted, otherwise (start from sleep mode) not</summary>
@@ -110,7 +103,7 @@ class Program {
       this->sleep->TimerSleep();
     }
   private:
-    const uint8_t version = 15;
+    const uint8_t version = 16;
     /**
      * 1 Refactoring and Send networksettings over lora
      * 2 Sleepmode and Powersaving implemented
@@ -127,16 +120,17 @@ class Program {
      * 13 Add internal programmable offset for Battery
      * 14 Add internal programmable name of device, so every device not need its own compiled file
      * 15 Add a random timesleep before sending lora, so that all devices not sending exactly the to the same time.
+     * 16 Refactoring everything. Implement Crypto using SHA256 and Xor. Change Binary transmission Format
      */
-    RXTX * s;
-    OTA * aOTA;
-    gpsclass * gps;
-    wlanclass * wlan;
-    loraclass * lora;
-    ledclass * led;
-    battclass * batt;
-    Storage * storage;
-    sleepclass * sleep;
+    RXTX* s;
+    OTA* aOTA;
+    Gps* gps;
+    Wlan* wlan;
+    Lora* lora;
+    Led* led;
+    Battery* batt;
+    Storage* storage;
+    Sleep* sleep;
   
     pthread_mutex_t mutexDisplay;
     bool dispThread = true;
