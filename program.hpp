@@ -120,7 +120,7 @@ class Program {
      * 13 Add internal programmable offset for Battery
      * 14 Add internal programmable name of device, so every device not need its own compiled file
      * 15 Add a random timesleep before sending lora, so that all devices not sending exactly the to the same time.
-     * 16 Refactoring everything. Implement Crypto using SHA256 and Xor.
+     * 16 Refactoring everything. Implement Crypto using SHA256 and Xor. Change Binary transmission Format
      */
     RXTX* s;
     OTA* aOTA;
